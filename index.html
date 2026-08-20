@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspector de Calidad - OBATOWN v3.9</title>
+    <title>Inspector de Calidad - INMETAL OBATOWN v4.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -189,12 +189,12 @@
 
     <div class="container">
         <header>
-            <h1> OBATOWN <span class="version-badge">v3.9</span></h1>
-            <p>Inspector de Calidad — Con Google Drive, Fotos por Ítem y Control de Materiales</p>
+            <h1>🔍 INMETAL OBATOWN <span class="version-badge">v4.0</span></h1>
+            <p>Industria Metalúrgica — Sistema de Inspección en Planta</p>
         </header>
 
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="switchTab('inspeccion', event)">🔍 Inspección</div>
+            <div class="nav-tab active" onclick="switchTab('inspeccion', event)"> Inspección</div>
             <div class="nav-tab" onclick="switchTab('materiales', event)">📦 Control de Materiales</div>
             <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla de OTs</div>
         </div>
@@ -219,14 +219,14 @@
                     <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">⏭️ Omitidas (cerradas)</div></div>
                 </div>
 
-                <h2 style="margin-top:30px; color:#1e40af;"> Listado de OTs</h2>
+                <h2 style="margin-top:30px; color:#1e40af;">📋 Listado de OTs</h2>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterTable('todas', event)">Todas <span class="count" id="countTodas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('activas', event)">Activas <span class="count" id="countActivas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('finalizadas', event)">Finalizadas <span class="count" id="countFinalizadas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('rechazadas', event)">Rechazadas <span class="count" id="countRechazadas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('vencidas', event)" style="border-color:#ef4444;">🔴 Vencidas <span class="count" id="countVencidas">0</span></button>
-                    <button class="filter-btn" onclick="filterTable('nuevas', event)" style="border-color:#10b981;">🆕 Nuevas <span class="count" id="countNuevas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('nuevas', event)" style="border-color:#10b981;"> Nuevas <span class="count" id="countNuevas">0</span></button>
                 </div>
 
                 <div class="table-container">
@@ -287,11 +287,11 @@
                     <p style="color:#64748b; margin-bottom:15px; font-size:0.9em;">Documentos generales de la OT (planos, certificados, fotos generales). Las fotos de cada ítem se adjuntan directamente en la sección de inspección.</p>
                     <div class="repo-actions">
                         <label class="btn btn-primary">
-                            📷 Sacar Foto / Subir Imagen
+                             Sacar Foto / Subir Imagen
                             <input type="file" id="input-photo" accept="image/*" capture="environment" hidden onchange="handleFileUpload(this, 'photo')">
                         </label>
                         <label class="btn btn-secondary">
-                             Subir Documento (Plano, Certificado, PDF)
+                            📄 Subir Documento (Plano, Certificado, PDF)
                             <input type="file" id="input-doc" accept=".pdf,.doc,.docx,.jpg,.png" multiple hidden onchange="handleFileUpload(this, 'document')">
                         </label>
                     </div>
@@ -301,7 +301,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2> Trazabilidad y Auditoría de la OT</h2>
+                    <h2>🕒 Trazabilidad y Auditoría de la OT</h2>
                     <div id="traceability-log" class="traceability-list">
                         <p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>
                     </div>
@@ -320,7 +320,7 @@
                 <div id="inspectionItems" style="display:none;"></div>
 
                 <div class="progress-container">
-                    <h2 style="color:#1e40af;"> Progreso Global de Inspección</h2>
+                    <h2 style="color:#1e40af;">📊 Progreso Global de Inspección</h2>
                     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%">0%</div></div>
                     <p id="progressText" style="text-align:center; margin-top:10px; font-weight:600;">0% completado (0 de 0 ítems)</p>
                 </div>
@@ -330,17 +330,17 @@
                     <p style="color:#64748b; margin-bottom:10px;">Firmá en el recuadro de abajo con el dedo o el mouse</p>
                     <canvas id="signature-canvas"></canvas>
                     <div class="signature-actions">
-                        <button class="btn btn-secondary" onclick="clearSignature()">🧹 Limpiar</button>
+                        <button class="btn btn-secondary" onclick="clearSignature()"> Limpiar</button>
                         <button class="btn btn-primary" onclick="saveSignature()">💾 Guardar Firma</button>
                     </div>
                 </div>
 
                 <div class="action-bar">
-                    <button class="btn btn-success" onclick="evaluateInspection()"> Evaluar Inspección</button>
+                    <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar Inspección</button>
                     <button class="btn btn-primary" onclick="generateFormalPDF()">📄 Descargar PDF Profesional</button>
-                    <button class="btn btn-secondary" onclick="generateFormalWord()">📝 Descargar Word con Imágenes</button>
-                    <button class="btn btn-drive" onclick="uploadToDrive()">️ Subir a Drive (Automático)</button>
-                    <button class="btn btn-drive-offline" onclick="exportOTToZip()"> Empaquetar ZIP (Manual)</button>
+                    <button class="btn btn-secondary" onclick="generateFormalWord()"> Descargar Word con Imágenes</button>
+                    <button class="btn btn-drive" onclick="uploadToDrive()">☁️ Subir a Drive (Organizado)</button>
+                    <button class="btn btn-drive-offline" onclick="exportOTToZip()">📦 Empaquetar ZIP (Manual)</button>
                     <button class="btn btn-info" onclick="prepareEmail()">📧 Enviar Email Automático</button>
                     <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar Todo</button>
                 </div>
@@ -369,14 +369,14 @@
                 </div>
 
                 <div class="form-section">
-                    <h2> Verificaciones de Material</h2>
+                    <h2>✅ Verificaciones de Material</h2>
                     <div id="materialChecks">
                         <div class="item-row">
                             <div><span style="font-weight:600;">Certificado de Calidad</span></div>
                             <select id="matCheck1" class="mat-check-select">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
-                                <option value="nc"> No Conforme</option>
+                                <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
                             <input type="text" placeholder="Observación" id="matCheck1Obs">
@@ -389,7 +389,7 @@
                             <select id="matCheck2" class="mat-check-select">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
-                                <option value="nc"> No Conforme</option>
+                                <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
                             <input type="text" placeholder="Observación" id="matCheck2Obs">
@@ -402,7 +402,7 @@
                             <select id="matCheck3" class="mat-check-select">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
-                                <option value="nc"> No Conforme</option>
+                                <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
                             <input type="text" placeholder="Observación" id="matCheck3Obs">
@@ -415,7 +415,7 @@
                             <select id="matCheck4" class="mat-check-select">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
-                                <option value="nc"> No Conforme</option>
+                                <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
                             <input type="text" placeholder="Observación" id="matCheck4Obs">
@@ -438,19 +438,27 @@
                 <div class="action-bar">
                     <button class="btn btn-success" onclick="saveMaterialControl()">💾 Guardar Control de Material</button>
                     <button class="btn btn-primary" onclick="generateMaterialPDF()">📄 Generar PDF</button>
-                    <button class="btn btn-warning" onclick="resetMaterialForm()"> Reiniciar</button>
+                    <button class="btn btn-warning" onclick="resetMaterialForm()">🔄 Reiniciar</button>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p><strong>OBATOWN COMPANY</strong></p>
+            <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
             <p>Departamento de Calidad — ISO 9001:2015</p>
-            <p>Sistema de Inspección en Planta v3.9</p>
+            <p>Sistema de Inspección en Planta v4.0</p>
         </footer>
     </div>
 
     <script>
+        // ============================================
+        // LOGO INMETAL EN BASE64 (Simplificado)
+        // ============================================
+        const INMETAL_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        
+        // Nota: Reemplazá esta cadena con el base64 real de tu logo INMETAL
+        // Podés convertir tu imagen en: https://www.base64-image.de/
+
         // ============================================
         // CONFIGURACIÓN DE GOOGLE DRIVE
         // ============================================
@@ -465,11 +473,12 @@
         let accessToken = null;
         let driveConnected = false;
         let materialSignaturePad = null;
+        let materialPhotos = {};
 
         // ============================================
         // CONFIGURACIÓN DE BASE DE DATOS LOCAL
         // ============================================
-        localforage.config({ name: 'ObatownQualityDB', version: 1.0, storeName: 'ot_repository' });
+        localforage.config({ name: 'InmetalQualityDB', version: 1.0, storeName: 'ot_repository' });
 
         // ============================================
         // LISTADO DE CONTACTOS CORPORATIVO
@@ -601,19 +610,18 @@
         // ============================================
         // ESTADO GLOBAL
         // ============================================
-        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v39') || '[]');
+        let otsData = JSON.parse(localStorage.getItem('inmetal_ots_v40') || '[]');
         let selectedTypes = new Set();
         let inspectionItems = {};
         let signaturePad = null;
         let currentFilter = 'todas';
-        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import_v39') || 'null');
-        let materialPhotos = {};
+        let lastImportStats = JSON.parse(localStorage.getItem('inmetal_last_import_v40') || 'null');
         
         const inspectionTypes = [
-            { id: 'dimensional', label: 'Dimensional', icon: '' }, { id: 'dureza', label: 'Dureza', icon: '💎' },
-            { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '' },
-            { id: 'soldadura', label: 'Soldadura', icon: '' }, { id: 'pmi', label: 'PMI / Documental', icon: '' },
-            { id: 'caldereria', label: 'Calderería', icon: '️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
+            { id: 'dimensional', label: 'Dimensional', icon: '📏' }, { id: 'dureza', label: 'Dureza', icon: '💎' },
+            { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '🔩' },
+            { id: 'soldadura', label: 'Soldadura', icon: '🔥' }, { id: 'pmi', label: 'PMI / Documental', icon: '📄' },
+            { id: 'caldereria', label: 'Calderería', icon: '🛠️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
             { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '' },
             { id: 'recepcion_mp', label: 'Recepción de MP', icon: '📦' }, { id: 'dimensional_final', label: 'Dimensional Final', icon: '✅' }
         ];
@@ -706,42 +714,79 @@
             return await response.json();
         }
 
+        async function createFolderInDrive(folderName, parentFolderId) {
+            if (!driveConnected || !accessToken) throw new Error('No hay conexión con Google Drive');
+            const metadata = {
+                name: folderName,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [parentFolderId]
+            };
+            const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: new Headers({
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                }),
+                body: JSON.stringify(metadata)
+            });
+            if (!response.ok) throw new Error('Error al crear carpeta');
+            return await response.json();
+        }
+
         async function uploadToDrive() {
             const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
+            if (!ot) return showToast('️ Seleccioná una OT primero', 'warning');
             if (!driveConnected) {
                 if (confirm('No estás conectado a Google Drive. ¿Querés conectarte ahora?')) connectToDrive();
-                else showToast('💡 Usá el botón "📦 Empaquetar ZIP" como alternativa', 'info');
+                else showToast('💡 Usá el botón " Empaquetar ZIP" como alternativa', 'info');
                 return;
             }
             try {
-                showToast('☁️ Subiendo archivos a Drive...', 'info');
+                showToast('☁️ Subiendo archivos a Drive (organizado en carpetas)...', 'info');
                 const otData = otsData.find(o => o.ot === ot) || {};
-                const folderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
+                const otFolderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
                 
-                const folderMetadata = { name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: [GOOGLE_DRIVE_CONFIG.FOLDER_ID] };
-                const folderResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' }),
-                    body: JSON.stringify(folderMetadata)
-                });
-                if (!folderResponse.ok) throw new Error('Error al crear carpeta');
-                const folder = await folderResponse.json();
-                const folderId = folder.id;
+                // Crear carpeta raíz de la OT
+                const otFolder = await createFolderInDrive(otFolderName, GOOGLE_DRIVE_CONFIG.FOLDER_ID);
+                const otFolderId = otFolder.id;
 
+                // Crear subcarpetas organizadas
+                const imagenesFolder = await createFolderInDrive('01_Imágenes', otFolderId);
+                const informesFolder = await createFolderInDrive('02_Informes', otFolderId);
+                const pdfFolder = await createFolderInDrive('03_PDF', otFolderId);
+                const certificadosFolder = await createFolderInDrive('04_Certificados', otFolderId);
+                const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolderId);
+
+                // Subir archivo de información
                 const infoText = `ORDEN DE TRABAJO: ${ot}\nCLIENTE: ${otData.cliente || 'N/A'}\nDESCRIPCIÓN: ${otData.descripcion || 'N/A'}\nRESPONSABLE: ${otData.responsable || 'N/A'}\nSECTOR: ${otData.sector || 'N/A'}\nESTADO: ${otData.estadoManual || 'N/A'}\nFECHA: ${new Date().toLocaleString('es-AR')}`;
-                await uploadFileToDrive('00_INFO_OT.txt', infoText, 'text/plain', folderId);
+                await uploadFileToDrive('00_INFO_OT.txt', infoText, 'text/plain', otFolderId);
 
+                // Subir archivos adjuntos del repositorio organizados por tipo
                 const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
                 for (const file of attachments) {
                     const base64Data = file.data.split(',')[1];
                     const byteCharacters = atob(base64Data);
                     const byteNumbers = new Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    await uploadFileToDrive(file.name, new Uint8Array(byteNumbers), file.mimeType, folderId);
+                    const byteArray = new Uint8Array(byteNumbers);
+                    
+                    // Determinar carpeta según tipo de archivo
+                    let targetFolderId = otFolderId;
+                    if (file.type === 'photo' || file.mimeType.startsWith('image/')) {
+                        targetFolderId = imagenesFolder.id;
+                    } else if (file.name.toLowerCase().includes('certificado') || file.name.toLowerCase().includes('certificate')) {
+                        targetFolderId = certificadosFolder.id;
+                    } else if (file.name.toLowerCase().endsWith('.pdf')) {
+                        targetFolderId = pdfFolder.id;
+                    } else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) {
+                        targetFolderId = informesFolder.id;
+                    }
+                    
+                    await uploadFileToDrive(file.name, byteArray, file.mimeType, targetFolderId);
                 }
-                await addTraceabilityLog(ot, 'SUBIDA_DRIVE', `Archivos subidos a Google Drive en carpeta: ${folderName}`);
-                showToast(`✅ Archivos subidos a Drive en: ${folderName}`, 'success');
+
+                await addTraceabilityLog(ot, 'SUBIDA_DRIVE', `Archivos subidos a Google Drive en carpeta organizada: ${otFolderName}`);
+                showToast(`✅ Archivos subidos a Drive organizados en: ${otFolderName}`, 'success');
             } catch (err) {
                 console.error(err);
                 showToast('❌ Error al subir a Drive: ' + err.message + '. Usá el modo ZIP.', 'error');
@@ -871,8 +916,8 @@
                         else { otsData.push(newOT); stats.new++; }
                     });
                     
-                    localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData));
-                    localStorage.setItem('obatown_last_import_v39', JSON.stringify({ date: importDate, ...stats }));
+                    localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData));
+                    localStorage.setItem('inmetal_last_import_v40', JSON.stringify({ date: importDate, ...stats }));
                     lastImportStats = { date: importDate, ...stats };
                     renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showImportSummary(stats);
                     document.getElementById('lastUpdate').style.display = 'block';
@@ -923,7 +968,7 @@
                     <td><span class="semaforo ${semaforoClass} dias-restantes">${daysText}</span></td>
                     <td class="${horasClass}">${horasText}</td>
                     <td><span class="status-badge status-${ot.estadoManual}">${ot.estadoManual}</span></td>
-                    <td>${ot.estadoManual === 'activa' ? `<button class="action-btn btn-select" onclick="selectOT('${ot.ot}')">🔍</button><button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅</button><button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌</button>` : '<span style="color:#64748b; font-size:0.8em;">Cerrada</span>'}</td>
+                    <td>${ot.estadoManual === 'activa' ? `<button class="action-btn btn-select" onclick="selectOT('${ot.ot}')"></button><button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅</button><button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌</button>` : '<span style="color:#64748b; font-size:0.8em;">Cerrada</span>'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -954,24 +999,24 @@
         }
         function markFinished(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
+            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
         }
         function markRejected(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
+            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
         }
         function clearAllData() {
             if (confirm('¿Borrar TODAS las OTs?') && confirm('️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
-                otsData = []; localStorage.removeItem('obatown_ots_v39'); localStorage.removeItem('obatown_last_import_v39');
+                otsData = []; localStorage.removeItem('inmetal_ots_v40'); localStorage.removeItem('inmetal_last_import_v40');
                 lastImportStats = null; document.getElementById('importSummary').style.display = 'none'; document.getElementById('lastUpdate').style.display = 'none';
-                renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
+                renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('️ Datos borrados', 'info');
             }
         }
         function exportData() {
             const exportRows = otsData.map(ot => ({ 'OT': ot.ot, 'Cliente': ot.cliente, 'Descripción': ot.descripcion, 'Sector': ot.sector, 'Responsable': ot.responsable, 'Estado': ot.estadoManual, 'Días': ot.dias }));
             const ws = XLSX.utils.json_to_sheet(exportRows); const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'OTs'); XLSX.writeFile(wb, `OTs_OBATOWN_${new Date().toISOString().split('T')[0]}.xlsx`);
-            showToast('📤 Datos exportados', 'success');
+            XLSX.utils.book_append_sheet(wb, ws, 'OTs'); XLSX.writeFile(wb, `OTs_INMETAL_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast(' Datos exportados', 'success');
         }
 
         function updateOTSelect() {
@@ -1038,7 +1083,7 @@
                     const fileData = { id: Date.now() + Math.random().toString(36).substr(2, 9), name: file.name, type: type, mimeType: file.type, size: file.size, data: e.target.result, date: new Date().toISOString(), user: inspectorName };
                     const key = `OT_${ot}_attachments`; let attachments = await localforage.getItem(key) || [];
                     attachments.push(fileData); await localforage.setItem(key, attachments);
-                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : '📄 Documento'}: ${file.name}`);
+                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : ' Documento'}: ${file.name}`);
                     await renderRepository(ot); showToast(`✅ ${file.name} guardado en el repositorio`, 'success');
                 };
                 reader.readAsDataURL(file);
@@ -1066,7 +1111,7 @@
             if (logs.length === 0) { logList.innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>'; } 
             else {
                 logList.innerHTML = logs.slice().reverse().map(log => `
-                    <div class="log-item"><span class="log-time">${new Date(log.date).toLocaleString('es-AR')}</span><span class="log-action">${log.action}</span><span class="log-detail">${log.detail}</span><span class="log-user">👤 ${log.user}</span></div>
+                    <div class="log-item"><span class="log-time">${new Date(log.date).toLocaleString('es-AR')}</span><span class="log-action">${log.action}</span><span class="log-detail">${log.detail}</span><span class="log-user"> ${log.user}</span></div>
                 `).join('');
             }
         }
@@ -1191,7 +1236,7 @@
         function clearSignature() { signaturePad.clear(); }
         function saveSignature() {
             if (signaturePad.isEmpty()) return showToast('Firmá primero', 'warning');
-            localStorage.setItem('obatown_signature', signaturePad.toDataURL());
+            localStorage.setItem('inmetal_signature', signaturePad.toDataURL());
             showToast('✅ Firma guardada', 'success');
         }
         function evaluateInspection() {
@@ -1201,12 +1246,12 @@
             if (selectedTypes.size === 0) return showToast('Seleccioná al menos un tipo de inspección', 'warning');
             let ncs = 0, obs = 0;
             Object.values(inspectionItems).forEach(items => { items.forEach(item => { if (item.status === 'nc') ncs++; if (item.status === 'obs') obs++; }); });
-            let msg = ncs > 0 ? `❌ NO CONFORME — ${ncs} no conformidad(es)` : obs > 0 ? `️ CONFORME con ${obs} observación(es)` : '✅ CONFORME';
+            let msg = ncs > 0 ? `❌ NO CONFORME — ${ncs} no conformidad(es)` : obs > 0 ? `⚠️ CONFORME con ${obs} observación(es)` : '✅ CONFORME';
             showToast(msg, ncs > 0 ? 'error' : obs > 0 ? 'warning' : 'success');
         }
 
         // ============================================
-        // GENERACIÓN DE PDF PROFESIONAL
+        // GENERACIÓN DE PDF PROFESIONAL CON LOGO
         // ============================================
         async function generateFormalPDF() {
             const ot = document.getElementById('otSelect').value;
@@ -1218,55 +1263,64 @@
             const margin = 15;
             let y = 15;
 
-            // ENCABEZADO PROFESIONAL CON MEMBRETE
-            doc.setFillColor(30, 64, 175);
-            doc.rect(0, 0, pageWidth, 40, 'F');
+            // ENCABEZADO CON LOGO
+            try {
+                doc.addImage(INMETAL_LOGO_BASE64, 'PNG', margin, y, 50, 20);
+            } catch (e) {
+                doc.setFillColor(30, 64, 175);
+                doc.rect(margin, y, 50, 20, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('INMETAL', margin + 5, y + 12);
+            }
             
-            // Logo/texto de empresa
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.setFont('helvetica', 'bold');
-            doc.text('OBATOWN COMPANY', margin, 20);
-            
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Departamento de Calidad — ISO 9001:2015', margin, 28);
-            doc.text('Sistema de Gestión de Calidad', margin, 33);
-            
-            // Número de documento
+            doc.setTextColor(30, 41, 59);
             doc.setFontSize(10);
-            doc.text(`Documento N°: INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`, pageWidth - margin, 20, { align: 'right' });
-            doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, 28, { align: 'right' });
-            doc.text(`Página 1 de 1`, pageWidth - margin, 35, { align: 'right' });
+            doc.setFont('helvetica', 'bold');
+            doc.text('INDUSTRIA METALÚRGICA', pageWidth - margin, y + 8, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.text('OBATOWN COMPANY S.A.', pageWidth - margin, y + 14, { align: 'right' });
+            doc.text('Departamento de Calidad — ISO 9001:2015', pageWidth - margin, y + 20, { align: 'right' });
             
-            y = 50;
+            y += 25;
+            doc.setDrawColor(30, 64, 175);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 5;
             
             // TÍTULO DEL DOCUMENTO
             doc.setTextColor(30, 41, 59);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('INFORME DE INSPECCIÓN DE CALIDAD', margin, y);
+            doc.text('INFORME DE INSPECCIÓN DE CALIDAD', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+            
+            // Número de documento
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100);
+            doc.text(`Documento N°: INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`, pageWidth - margin, y, { align: 'right' });
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, y + 5, { align: 'right' });
             y += 10;
             
             // INTRODUCCIÓN
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
+            doc.setFillColor(241, 245, 249);
+            doc.rect(margin, y - 3, pageWidth - 2 * margin, 18, 'F');
             doc.setTextColor(80, 80, 80);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'italic');
             const introText = [
                 'El presente documento certifica los resultados de la inspección de calidad realizada conforme',
-                'a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.',
-                'Este informe es un documento oficial que forma parte del registro de calidad de la organización.'
+                'a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.'
             ];
             introText.forEach(line => {
-                doc.text(line, margin, y);
-                y += 5;
+                doc.text(line, margin + 3, y + 3);
+                y += 4;
             });
             y += 5;
             
             // SECCIÓN 1: DATOS DE TRAZABILIDAD
-            doc.setFillColor(241, 245, 249);
-            doc.rect(margin - 2, y - 5, pageWidth - 2 * margin + 4, 55, 'F');
-            
             doc.setTextColor(30, 64, 175);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
@@ -1334,7 +1388,7 @@
                 y = doc.lastAutoTable.finalY + 10;
             }
             
-            // SECCIÓN 3: EVIDENCIAS FOTOGRÁFICAS
+            // SECCIÓN 3: EVIDENCIAS FOTOGRÁFICAS (IMÁGENES PEQUEÑAS)
             doc.setTextColor(30, 64, 175);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
@@ -1356,20 +1410,24 @@
                         doc.text(`${type.label} - ${items[idx]}`, margin, y);
                         y += 5;
                         
+                        // Mostrar imágenes en grid pequeño (3 por fila)
+                        let col = 0;
                         item.photos.forEach((photo) => {
-                            if (y > 250) { doc.addPage(); y = 20; }
+                            if (col === 0 && y > 250) { doc.addPage(); y = 20; }
                             try {
-                                doc.addImage(photo.data, 'JPEG', margin, y, 40, 30);
-                                doc.setFontSize(7);
+                                doc.addImage(photo.data, 'JPEG', margin + (col * 55), y, 50, 35);
+                                doc.setFontSize(6);
                                 doc.setFont('helvetica', 'normal');
                                 doc.setTextColor(100);
-                                doc.text(photo.name.substring(0, 40), margin + 42, y + 5);
-                                y += 32;
+                                doc.text(photo.name.substring(0, 25), margin + (col * 55), y + 38);
+                                col++;
+                                if (col >= 3) { col = 0; y += 42; }
                             } catch (e) {
                                 doc.text(`[Foto: ${photo.name}]`, margin, y);
                                 y += 5;
                             }
                         });
+                        if (col > 0) y += 42;
                         y += 3;
                     }
                 });
@@ -1423,15 +1481,18 @@
                 
                 doc.setFontSize(8);
                 doc.setTextColor(120);
-                doc.text('OBATOWN Company — Departamento de Calidad', pageWidth / 2, 290, { align: 'center' });
-                doc.text('ISO 9001:2015 — Documento Controlado', pageWidth / 2, 295, { align: 'center' });
+                doc.text('INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.', pageWidth / 2, 290, { align: 'center' });
+                doc.text('Departamento de Calidad — ISO 9001:2015 — Documento Controlado', pageWidth / 2, 295, { align: 'center' });
                 doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, 295, { align: 'right' });
             }
             
             doc.save(`INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
-            showToast('📄 PDF Profesional generado con imágenes', 'success');
+            showToast('📄 PDF Profesional generado con logo e imágenes pequeñas', 'success');
         }
 
+        // ============================================
+        // GENERACIÓN DE WORD PROFESIONAL CON LOGO E IMÁGENES PEQUEÑAS
+        // ============================================
         async function generateFormalWord() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
@@ -1440,36 +1501,37 @@
             const inspector = document.getElementById('inspector').value || 'No especificado';
             const otData = otsData.find(o => o.ot === ot) || {};
             
-            // Construir tabla de resultados con imágenes
+            // Construir tabla de resultados con imágenes pequeñas
             let itemsHtml = '';
             Object.keys(inspectionItems).forEach(typeId => {
                 const type = inspectionTypes.find(t => t.id === typeId);
                 const items = getItemsForType(typeId);
-                itemsHtml += `<h3 style="color:#1e40af; margin-top:20px; border-bottom:2px solid #1e40af; padding-bottom:5px; font-size:14pt;">${type.icon} ${type.label}</h3>`;
-                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:10pt; margin-bottom:15px; border:1px solid #ddd;">
-                    <tr style="background:#1e40af; color:white;"><th style="border:1px solid #ddd; padding:8px; text-align:left;">Ítem</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Estado</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Valor</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Observación</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Imágenes</th></tr>`;
+                itemsHtml += `<h3 style="color:#1e40af; margin-top:20px; border-bottom:2px solid #1e40af; padding-bottom:5px; font-size:13pt;">${type.icon} ${type.label}</h3>`;
+                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:9pt; margin-bottom:10px; border:1px solid #ddd;">
+                    <tr style="background:#1e40af; color:white;"><th style="border:1px solid #ddd; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Observación</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Imágenes</th></tr>`;
                 
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
-                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
+                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
                         const photoCount = item.photos ? item.photos.length : 0;
-                        let photosHtml = photoCount > 0 ? ` ${photoCount} imagen(es)` : '—';
+                        let photosHtml = photoCount > 0 ? `📷 ${photoCount} imagen(es)` : '—';
                         
                         itemsHtml += `<tr>
-                            <td style="border:1px solid #ddd; padding:6px;">${items[idx]}</td>
-                            <td style="border:1px solid #ddd; padding:6px;">${statusText}</td>
-                            <td style="border:1px solid #ddd; padding:6px;">${item.value || '—'}</td>
-                            <td style="border:1px solid #ddd; padding:6px;">${item.obs || '—'}</td>
-                            <td style="border:1px solid #ddd; padding:6px;">${photosHtml}</td>
+                            <td style="border:1px solid #ddd; padding:5px;">${items[idx]}</td>
+                            <td style="border:1px solid #ddd; padding:5px;">${statusText}</td>
+                            <td style="border:1px solid #ddd; padding:5px;">${item.value || '—'}</td>
+                            <td style="border:1px solid #ddd; padding:5px;">${item.obs || '—'}</td>
+                            <td style="border:1px solid #ddd; padding:5px;">${photosHtml}</td>
                         </tr>`;
                         
-                        // Agregar imágenes inline si existen
+                        // Agregar imágenes pequeñas inline si existen (máximo 100px)
                         if (item.photos && item.photos.length > 0) {
-                            itemsHtml += `<tr><td colspan="5" style="padding:10px; background:#f8fafc;">`;
+                            itemsHtml += `<tr><td colspan="5" style="padding:8px; background:#f8fafc;">`;
+                            itemsHtml += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
                             item.photos.forEach(photo => {
-                                itemsHtml += `<img src="${photo.data}" style="max-width:150px; margin:5px; border:1px solid #ddd; border-radius:4px;" />`;
+                                itemsHtml += `<img src="${photo.data}" style="width:100px; height:75px; object-fit:cover; border:1px solid #ddd; border-radius:3px;" />`;
                             });
-                            itemsHtml += `</td></tr>`;
+                            itemsHtml += `</div></td></tr>`;
                         }
                     }
                 });
@@ -1482,31 +1544,28 @@
                     <meta charset="utf-8">
                     <title>Informe de Inspección - OT ${ot}</title>
                     <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.5; }
-                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 30px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 28pt; font-weight: bold; }
-                        .header p { margin: 8px 0 0; font-size: 12pt; opacity: 0.95; }
-                        .doc-info { background: #f1f5f9; padding: 15px; margin: 20px 0; border-left: 4px solid #1e40af; }
-                        .section { margin: 25px 0; }
-                        .section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 8px; font-size: 16pt; margin-bottom: 15px; }
-                        .section h3 { color: #334155; font-size: 12pt; margin-top: 15px; }
-                        .info-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-                        .info-table td { border: 1px solid #ddd; padding: 8px; }
-                        .info-table td:first-child { font-weight: bold; background: #f8fafc; width: 35%; }
-                        .intro { background: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0; font-style: italic; color: #475569; }
-                        .signature { margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
-                        .footer { margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 15px; font-size: 9pt; color: #64748b; text-align: center; }
-                        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.4; font-size: 10pt; }
+                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px; text-align: center; }
+                        .header h1 { margin: 0; font-size: 22pt; font-weight: bold; }
+                        .header p { margin: 5px 0 0; font-size: 10pt; opacity: 0.95; }
+                        .doc-info { background: #f1f5f9; padding: 12px; margin: 15px 0; border-left: 4px solid #1e40af; font-size: 9pt; }
+                        .section { margin: 20px 0; }
+                        .section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 6px; font-size: 14pt; margin-bottom: 12px; }
+                        .intro { background: #eff6ff; padding: 12px; border-radius: 4px; margin: 15px 0; font-style: italic; color: #475569; font-size: 9pt; }
+                        .signature { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 15px; }
+                        .footer { margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 8pt; color: #64748b; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
                         th { background: #1e40af; color: white; font-weight: bold; }
-                        img { max-width: 200px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+                        img { max-width: 100px; max-height: 75px; margin: 3px; border: 1px solid #ddd; border-radius: 3px; }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                        <h1>OBATOWN COMPANY</h1>
+                        <h1>INMETAL</h1>
+                        <p>INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</p>
                         <p>Departamento de Calidad — ISO 9001:2015</p>
-                        <p>INFORME DE INSPECCIÓN DE CALIDAD</p>
+                        <p style="font-size:14pt; margin-top:10px; font-weight:bold;">INFORME DE INSPECCIÓN DE CALIDAD</p>
                     </div>
                     
                     <div class="doc-info">
@@ -1521,15 +1580,15 @@
                     
                     <div class="section">
                         <h2>1. DATOS DE TRAZABILIDAD</h2>
-                        <table class="info-table">
-                            <tr><td>Orden de Trabajo (OT)</td><td>${ot}</td></tr>
-                            <tr><td>Cliente</td><td>${document.getElementById('cliente').value || '—'}</td></tr>
-                            <tr><td>Responsable / Operario</td><td>${document.getElementById('operario').value || '—'}</td></tr>
-                            <tr><td>Sector</td><td>${document.getElementById('sectorExcel').value || '—'}</td></tr>
-                            <tr><td>Etapa / Proceso</td><td>${document.getElementById('etapa').value || '—'}</td></tr>
-                            <tr><td>Inspector</td><td>${inspector}</td></tr>
-                            <tr><td>Turno</td><td>${document.getElementById('turno').value || '—'}</td></tr>
-                            <tr><td>Descripción del Trabajo</td><td>${document.getElementById('descripcion').value || '—'}</td></tr>
+                        <table style="width:100%; border-collapse:collapse; font-size:9pt;">
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold; width:35%;">Orden de Trabajo (OT)</td><td style="border:1px solid #ddd; padding:6px;">${ot}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Cliente</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('cliente').value || '—'}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Responsable / Operario</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('operario').value || '—'}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Sector</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('sectorExcel').value || '—'}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Etapa / Proceso</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('etapa').value || '—'}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Inspector</td><td style="border:1px solid #ddd; padding:6px;">${inspector}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Turno</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('turno').value || '—'}</td></tr>
+                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Descripción del Trabajo</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('descripcion').value || '—'}</td></tr>
                         </table>
                     </div>
                     
@@ -1542,13 +1601,13 @@
                         <h2>3. FIRMA Y CERTIFICACIÓN</h2>
                         <p><strong>Inspector de Calidad:</strong> ${inspector}</p>
                         <p><strong>Fecha:</strong> ${fecha}</p>
-                        ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:250px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}
+                        ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:200px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}
                     </div>
                     
                     <div class="footer">
-                        <p><strong>OBATOWN Company — Departamento de Calidad</strong></p>
-                        <p>ISO 9001:2015 — Documento Controlado</p>
-                        <p>Este documento es propiedad de OBATOWN Company y su contenido es confidencial</p>
+                        <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
+                        <p>Departamento de Calidad — ISO 9001:2015 — Documento Controlado</p>
+                        <p>Este documento es propiedad de INMETAL y su contenido es confidencial</p>
                     </div>
                 </body>
                 </html>
@@ -1561,7 +1620,7 @@
             a.download = `INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.doc`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('📝 Word Profesional generado con imágenes', 'success');
+            showToast('📝 Word Profesional generado con logo e imágenes pequeñas', 'success');
         }
 
         // ============================================
@@ -1588,7 +1647,7 @@
 
 Por medio del presente se remite el informe de inspección de calidad correspondiente a la Orden de Trabajo N° ${ot}.
 
-📋 DATOS DEL INFORME:
+ DATOS DEL INFORME:
 • OT: ${ot}
 • Cliente: ${otData.cliente || '—'}
 • Inspector: ${inspector}
@@ -1608,17 +1667,14 @@ Saludos cordiales,
 
 ${inspector}
 Departamento de Calidad
-OBATOWN Company
+INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.
 ISO 9001:2015
 
 ---
 Destinatarios: ${selectedNames.join(', ')}
 `;
             
-            // Crear link mailto con todos los correos
             const mailtoLink = `mailto:${selectedEmails.join(';')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            // Abrir cliente de correo
             window.location.href = mailtoLink;
             
             showToast(`✅ Email preparado para ${selectedEmails.length} destinatarios`, 'success');
@@ -1630,7 +1686,7 @@ Destinatarios: ${selectedNames.join(', ')}
         async function exportOTToZip() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
-            showToast('📦 Empaquetando archivos...', 'info');
+            showToast(' Empaquetando archivos...', 'info');
             try {
                 const zip = new JSZip(); const otFolder = zip.folder(`OT_${ot}`);
                 const otData = otsData.find(o => o.ot === ot) || {};
@@ -1643,11 +1699,11 @@ Destinatarios: ${selectedNames.join(', ')}
                 }
                 const content = await zip.generateAsync({ type: "blob" });
                 const cleanClientName = (otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-                saveAs(content, `OBATOWN_OT_${ot}_${cleanClientName}.zip`);
+                saveAs(content, `INMETAL_OT_${ot}_${cleanClientName}.zip`);
                 await addTraceabilityLog(ot, 'EXPORTACIÓN_ZIP', 'Se empaquetó la carpeta de la OT (modo offline)');
                 showToast('✅ ZIP descargado. Subilo manualmente a Drive', 'success');
             } catch (err) {
-                console.error(err); showToast(' Error al empaquetar: ' + err.message, 'error');
+                console.error(err); showToast('❌ Error al empaquetar: ' + err.message, 'error');
             }
         }
 
@@ -1676,11 +1732,11 @@ Destinatarios: ${selectedNames.join(', ')}
         
         function saveMaterialSignature() {
             if (!materialSignaturePad || materialSignaturePad.isEmpty()) return showToast('Firmá primero', 'warning');
-            localStorage.setItem('obatown_material_signature', materialSignaturePad.toDataURL());
+            localStorage.setItem('inmetal_material_signature', materialSignaturePad.toDataURL());
             showToast('✅ Firma guardada', 'success');
         }
         
-        function saveMaterialControl() {
+        async function saveMaterialControl() {
             const ot = document.getElementById('matOtSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
             
@@ -1704,20 +1760,53 @@ Destinatarios: ${selectedNames.join(', ')}
             };
             
             // Guardar en IndexedDB
-            localforage.getItem('material_controls').then(controls => {
-                if (!controls) controls = [];
-                controls.push(materialData);
-                localforage.setItem('material_controls', controls).then(() => {
-                    showToast('✅ Control de material guardado correctamente', 'success');
-                    resetMaterialForm();
-                });
-            });
+            const controls = await localforage.getItem('material_controls') || [];
+            controls.push(materialData);
+            await localforage.setItem('material_controls', controls);
+            
+            // Subir a Drive si está conectado
+            if (driveConnected) {
+                try {
+                    showToast('☁️ Subiendo control de material a Drive...', 'info');
+                    const otData = otsData.find(o => o.ot === ot) || {};
+                    const otFolderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
+                    
+                    // Buscar o crear carpeta de la OT
+                    const otFolder = await createFolderInDrive(otFolderName, GOOGLE_DRIVE_CONFIG.FOLDER_ID);
+                    const otFolderId = otFolder.id;
+                    
+                    // Crear subcarpeta de controles de materiales
+                    const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolderId);
+                    
+                    // Subir archivo de control
+                    const controlText = `CONTROL DE INGRESO DE MATERIALES\nOT: ${ot}\nFecha: ${materialData.fecha}\nResponsable: ${materialData.responsable}\nMaterial: ${materialData.descripcion}\nCantidad: ${materialData.cantidad} ${materialData.unidad}\nProveedor: ${materialData.proveedor}\nCertificado: ${materialData.certificado}\n\nVERIFICACIONES:\n1. Certificado: ${materialData.verificaciones.certificado.estado} - ${materialData.verificaciones.certificado.obs}\n2. Visual: ${materialData.verificaciones.visual.estado} - ${materialData.verificaciones.visual.obs}\n3. Medidas: ${materialData.verificaciones.medidas.estado} - ${materialData.verificaciones.medidas.obs}\n4. Documentación: ${materialData.verificaciones.documentacion.estado} - ${materialData.verificaciones.documentacion.obs}`;
+                    await uploadFileToDrive(`Control_Material_OT${ot}_${new Date().toISOString().split('T')[0]}.txt`, controlText, 'text/plain', controlesFolder.id);
+                    
+                    // Subir fotos
+                    for (const [checkNum, photo] of Object.entries(materialPhotos)) {
+                        const base64Data = photo.data.split(',')[1];
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        await uploadFileToDrive(`Foto_Verificacion${checkNum}_${photo.name}`, new Uint8Array(byteNumbers), photo.mimeType || 'image/jpeg', controlesFolder.id);
+                    }
+                    
+                    showToast('✅ Control de material guardado y subido a Drive', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('⚠️ Control guardado localmente pero error al subir a Drive', 'warning');
+                }
+            } else {
+                showToast('✅ Control de material guardado localmente', 'success');
+            }
+            
+            resetMaterialForm();
         }
         
         function generateMaterialPDF() {
             const ot = document.getElementById('matOtSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
-            showToast('📄 Generando PDF de control de material...', 'info');
+            showToast(' Generando PDF de control de material...', 'info');
             // Implementación similar a generateFormalPDF pero para materiales
         }
         
