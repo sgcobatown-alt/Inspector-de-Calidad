@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspector de Calidad - OBATOWN v3.8</title>
-    <!-- Librerías externas -->
+    <title>Inspector de Calidad - OBATOWN v3.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,7 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Google API para Drive -->
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
@@ -191,16 +189,18 @@
 
     <div class="container">
         <header>
-            <h1>🔍 OBATOWN <span class="version-badge">v3.8</span></h1>
-            <p>Inspector de Calidad — Con Google Drive y Fotos por Ítem</p>
+            <h1> OBATOWN <span class="version-badge">v3.9</span></h1>
+            <p>Inspector de Calidad — Con Google Drive, Fotos por Ítem y Control de Materiales</p>
         </header>
 
         <div class="nav-tabs">
             <div class="nav-tab active" onclick="switchTab('inspeccion', event)">🔍 Inspección</div>
+            <div class="nav-tab" onclick="switchTab('materiales', event)">📦 Control de Materiales</div>
             <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla de OTs</div>
         </div>
 
         <div class="content">
+            <!-- TAB: PLANILLA DE OTs -->
             <div id="planilla" class="tab-content">
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📁</div>
@@ -208,7 +208,7 @@
                     <div class="upload-hint">Tocá acá o arrastrá tu archivo Excel (.xls / .xlsx)</div>
                     <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
                     <div class="last-update" id="lastUpdate" style="display:none;">
-                        📅 Última actualización: <strong id="lastUpdateDate"></strong>
+                         Última actualización: <strong id="lastUpdateDate"></strong>
                     </div>
                 </div>
 
@@ -219,7 +219,7 @@
                     <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">⏭️ Omitidas (cerradas)</div></div>
                 </div>
 
-                <h2 style="margin-top:30px; color:#1e40af;">📋 Listado de OTs</h2>
+                <h2 style="margin-top:30px; color:#1e40af;"> Listado de OTs</h2>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterTable('todas', event)">Todas <span class="count" id="countTodas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('activas', event)">Activas <span class="count" id="countActivas">0</span></button>
@@ -246,6 +246,7 @@
                 </div>
             </div>
 
+            <!-- TAB: INSPECCIÓN -->
             <div id="inspeccion" class="tab-content active">
                 <div class="form-section">
                     <h2>📋 Datos de Trazabilidad</h2>
@@ -290,7 +291,7 @@
                             <input type="file" id="input-photo" accept="image/*" capture="environment" hidden onchange="handleFileUpload(this, 'photo')">
                         </label>
                         <label class="btn btn-secondary">
-                            📄 Subir Documento (Plano, Certificado, PDF)
+                             Subir Documento (Plano, Certificado, PDF)
                             <input type="file" id="input-doc" accept=".pdf,.doc,.docx,.jpg,.png" multiple hidden onchange="handleFileUpload(this, 'document')">
                         </label>
                     </div>
@@ -300,7 +301,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>🕒 Trazabilidad y Auditoría de la OT</h2>
+                    <h2> Trazabilidad y Auditoría de la OT</h2>
                     <div id="traceability-log" class="traceability-list">
                         <p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>
                     </div>
@@ -319,7 +320,7 @@
                 <div id="inspectionItems" style="display:none;"></div>
 
                 <div class="progress-container">
-                    <h2 style="color:#1e40af;">📊 Progreso Global de Inspección</h2>
+                    <h2 style="color:#1e40af;"> Progreso Global de Inspección</h2>
                     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%">0%</div></div>
                     <p id="progressText" style="text-align:center; margin-top:10px; font-weight:600;">0% completado (0 de 0 ítems)</p>
                 </div>
@@ -335,13 +336,109 @@
                 </div>
 
                 <div class="action-bar">
-                    <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar Inspección</button>
-                    <button class="btn btn-primary" onclick="generateFormalPDF()">📄 Descargar PDF</button>
-                    <button class="btn btn-secondary" onclick="generateFormalWord()">📝 Descargar Word</button>
-                    <button class="btn btn-drive" onclick="uploadToDrive()">☁️ Subir a Drive (Automático)</button>
-                    <button class="btn btn-drive-offline" onclick="exportOTToZip()">📦 Empaquetar ZIP (Manual)</button>
-                    <button class="btn btn-info" onclick="prepareEmail()">📧 Preparar Email</button>
+                    <button class="btn btn-success" onclick="evaluateInspection()"> Evaluar Inspección</button>
+                    <button class="btn btn-primary" onclick="generateFormalPDF()">📄 Descargar PDF Profesional</button>
+                    <button class="btn btn-secondary" onclick="generateFormalWord()">📝 Descargar Word con Imágenes</button>
+                    <button class="btn btn-drive" onclick="uploadToDrive()">️ Subir a Drive (Automático)</button>
+                    <button class="btn btn-drive-offline" onclick="exportOTToZip()"> Empaquetar ZIP (Manual)</button>
+                    <button class="btn btn-info" onclick="prepareEmail()">📧 Enviar Email Automático</button>
                     <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar Todo</button>
+                </div>
+            </div>
+
+            <!-- TAB: CONTROL DE MATERIALES -->
+            <div id="materiales" class="tab-content">
+                <div class="form-section">
+                    <h2>📦 Control de Ingreso de Materiales</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Orden de Trabajo (OT) *</label>
+                            <select id="matOtSelect" onchange="autoFillMaterialOT()">
+                                <option value="">Seleccionar OT...</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Cliente</label><input type="text" id="matCliente" readonly></div>
+                        <div class="form-group"><label>Fecha de Recepción</label><input type="date" id="matFecha"></div>
+                        <div class="form-group"><label>Responsable de Recepción</label><input type="text" id="matResponsable" placeholder="Nombre del responsable"></div>
+                        <div class="form-group full-width"><label>Descripción del Material</label><textarea id="matDescripcion" rows="2" placeholder="Descripción detallada del material recibido..."></textarea></div>
+                        <div class="form-group"><label>Cantidad</label><input type="number" id="matCantidad" placeholder="0"></div>
+                        <div class="form-group"><label>Unidad</label><select id="matUnidad"><option value="">Seleccionar...</option><option>Unidades</option><option>Kg</option><option>Metros</option><option>Juego</option></select></div>
+                        <div class="form-group"><label>Proveedor</label><input type="text" id="matProveedor" placeholder="Nombre del proveedor"></div>
+                        <div class="form-group"><label>N° Certificado/Remito</label><input type="text" id="matCertificado" placeholder="Número de documento"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2> Verificaciones de Material</h2>
+                    <div id="materialChecks">
+                        <div class="item-row">
+                            <div><span style="font-weight:600;">Certificado de Calidad</span></div>
+                            <select id="matCheck1" class="mat-check-select">
+                                <option value="">Sin evaluar</option>
+                                <option value="ok">✅ Conforme</option>
+                                <option value="nc"> No Conforme</option>
+                                <option value="na">➖ No Aplica</option>
+                            </select>
+                            <input type="text" placeholder="Observación" id="matCheck1Obs">
+                            <label class="item-photo-btn">
+                                📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 1)">
+                            </label>
+                        </div>
+                        <div class="item-row">
+                            <div><span style="font-weight:600;">Inspección Visual</span></div>
+                            <select id="matCheck2" class="mat-check-select">
+                                <option value="">Sin evaluar</option>
+                                <option value="ok">✅ Conforme</option>
+                                <option value="nc"> No Conforme</option>
+                                <option value="na">➖ No Aplica</option>
+                            </select>
+                            <input type="text" placeholder="Observación" id="matCheck2Obs">
+                            <label class="item-photo-btn">
+                                📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 2)">
+                            </label>
+                        </div>
+                        <div class="item-row">
+                            <div><span style="font-weight:600;">Medidas/Dimensiones</span></div>
+                            <select id="matCheck3" class="mat-check-select">
+                                <option value="">Sin evaluar</option>
+                                <option value="ok">✅ Conforme</option>
+                                <option value="nc"> No Conforme</option>
+                                <option value="na">➖ No Aplica</option>
+                            </select>
+                            <input type="text" placeholder="Observación" id="matCheck3Obs">
+                            <label class="item-photo-btn">
+                                📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 3)">
+                            </label>
+                        </div>
+                        <div class="item-row">
+                            <div><span style="font-weight:600;">Documentación Adjunta</span></div>
+                            <select id="matCheck4" class="mat-check-select">
+                                <option value="">Sin evaluar</option>
+                                <option value="ok">✅ Conforme</option>
+                                <option value="nc"> No Conforme</option>
+                                <option value="na">➖ No Aplica</option>
+                            </select>
+                            <input type="text" placeholder="Observación" id="matCheck4Obs">
+                            <label class="item-photo-btn">
+                                📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 4)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>️ Firma del Responsable</h2>
+                    <canvas id="materialSignatureCanvas" style="width:100%; height:200px; border:2px solid #cbd5e1; border-radius:8px; background:white;"></canvas>
+                    <div class="signature-actions">
+                        <button class="btn btn-secondary" onclick="clearMaterialSignature()">🧹 Limpiar</button>
+                        <button class="btn btn-primary" onclick="saveMaterialSignature()">💾 Guardar Firma</button>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-success" onclick="saveMaterialControl()">💾 Guardar Control de Material</button>
+                    <button class="btn btn-primary" onclick="generateMaterialPDF()">📄 Generar PDF</button>
+                    <button class="btn btn-warning" onclick="resetMaterialForm()"> Reiniciar</button>
                 </div>
             </div>
         </div>
@@ -349,13 +446,13 @@
         <footer>
             <p><strong>OBATOWN COMPANY</strong></p>
             <p>Departamento de Calidad — ISO 9001:2015</p>
-            <p>Sistema de Inspección en Planta v3.8</p>
+            <p>Sistema de Inspección en Planta v3.9</p>
         </footer>
     </div>
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DE GOOGLE DRIVE (TUS DATOS REALES)
+        // CONFIGURACIÓN DE GOOGLE DRIVE
         // ============================================
         const GOOGLE_DRIVE_CONFIG = {
             CLIENT_ID: '815260596124-e39t9nof99eb14ekdio1n1kup8ittovg.apps.googleusercontent.com',
@@ -367,6 +464,7 @@
         let tokenClient = null;
         let accessToken = null;
         let driveConnected = false;
+        let materialSignaturePad = null;
 
         // ============================================
         // CONFIGURACIÓN DE BASE DE DATOS LOCAL
@@ -503,19 +601,20 @@
         // ============================================
         // ESTADO GLOBAL
         // ============================================
-        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v38') || '[]');
+        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v39') || '[]');
         let selectedTypes = new Set();
         let inspectionItems = {};
         let signaturePad = null;
         let currentFilter = 'todas';
-        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import_v38') || 'null');
+        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import_v39') || 'null');
+        let materialPhotos = {};
         
         const inspectionTypes = [
-            { id: 'dimensional', label: 'Dimensional', icon: '📏' }, { id: 'dureza', label: 'Dureza', icon: '💎' },
-            { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '🔩' },
-            { id: 'soldadura', label: 'Soldadura', icon: '🔥' }, { id: 'pmi', label: 'PMI / Documental', icon: '📄' },
-            { id: 'caldereria', label: 'Calderería', icon: '🛠️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
-            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '🎨' },
+            { id: 'dimensional', label: 'Dimensional', icon: '' }, { id: 'dureza', label: 'Dureza', icon: '💎' },
+            { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '' },
+            { id: 'soldadura', label: 'Soldadura', icon: '' }, { id: 'pmi', label: 'PMI / Documental', icon: '' },
+            { id: 'caldereria', label: 'Calderería', icon: '️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
+            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '' },
             { id: 'recepcion_mp', label: 'Recepción de MP', icon: '📦' }, { id: 'dimensional_final', label: 'Dimensional Final', icon: '✅' }
         ];
 
@@ -654,11 +753,13 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('fechaInspeccion').valueAsDate = new Date();
+            document.getElementById('matFecha').valueAsDate = new Date();
             renderContactList();
             renderTypeGrid();
             renderOTTable();
             updateOTSelect();
             initSignaturePad();
+            initMaterialSignaturePad();
             initUploadZone();
             updateFilterCounts();
             if (lastImportStats) {
@@ -700,6 +801,11 @@
                 canvas.getContext('2d').scale(ratio, ratio); signaturePad.clear();
             }
             resize(); window.addEventListener('resize', resize);
+        }
+        
+        function initMaterialSignaturePad() {
+            const canvas = document.getElementById('materialSignatureCanvas');
+            materialSignaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: 'rgb(0, 0, 0)' });
         }
 
         // ============================================
@@ -765,10 +871,10 @@
                         else { otsData.push(newOT); stats.new++; }
                     });
                     
-                    localStorage.setItem('obatown_ots_v38', JSON.stringify(otsData));
-                    localStorage.setItem('obatown_last_import_v38', JSON.stringify({ date: importDate, ...stats }));
+                    localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData));
+                    localStorage.setItem('obatown_last_import_v39', JSON.stringify({ date: importDate, ...stats }));
                     lastImportStats = { date: importDate, ...stats };
-                    renderOTTable(); updateOTSelect(); updateFilterCounts(); showImportSummary(stats);
+                    renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showImportSummary(stats);
                     document.getElementById('lastUpdate').style.display = 'block';
                     document.getElementById('lastUpdateDate').textContent = importDate;
                     showToast(`✅ Importación: ${stats.new} nuevas, ${stats.updated} actualizadas, ${stats.skipped} omitidas`, 'success');
@@ -848,15 +954,15 @@
         }
         function markFinished(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('obatown_ots_v38', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
+            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
         }
         function markRejected(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('obatown_ots_v38', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
+            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('obatown_ots_v39', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
         }
         function clearAllData() {
-            if (confirm('¿Borrar TODAS las OTs?') && confirm('⚠️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
-                otsData = []; localStorage.removeItem('obatown_ots_v38'); localStorage.removeItem('obatown_last_import_v38');
+            if (confirm('¿Borrar TODAS las OTs?') && confirm('️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
+                otsData = []; localStorage.removeItem('obatown_ots_v39'); localStorage.removeItem('obatown_last_import_v39');
                 lastImportStats = null; document.getElementById('importSummary').style.display = 'none'; document.getElementById('lastUpdate').style.display = 'none';
                 renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
             }
@@ -881,6 +987,16 @@
             if (currentValue) select.value = currentValue;
         }
         
+        function updateMaterialOTSelect() {
+            const select = document.getElementById('matOtSelect');
+            select.innerHTML = '<option value="">Seleccionar OT...</option>';
+            otsData.filter(o => o.estadoManual === 'activa').forEach(ot => {
+                const opt = document.createElement('option'); opt.value = ot.ot;
+                opt.textContent = `OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
+                select.appendChild(opt);
+            });
+        }
+        
         async function autoFillOT() {
             const otNumber = document.getElementById('otSelect').value;
             const ot = otsData.find(o => o.ot === otNumber);
@@ -897,6 +1013,14 @@
                 document.getElementById('repo-ot-number').textContent = '';
                 document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT para ver su repositorio.</p>';
                 document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>';
+            }
+        }
+        
+        function autoFillMaterialOT() {
+            const otNumber = document.getElementById('matOtSelect').value;
+            const ot = otsData.find(o => o.ot === otNumber);
+            if (ot) {
+                document.getElementById('matCliente').value = ot.cliente || '';
             }
         }
 
@@ -1077,45 +1201,111 @@
             if (selectedTypes.size === 0) return showToast('Seleccioná al menos un tipo de inspección', 'warning');
             let ncs = 0, obs = 0;
             Object.values(inspectionItems).forEach(items => { items.forEach(item => { if (item.status === 'nc') ncs++; if (item.status === 'obs') obs++; }); });
-            let msg = ncs > 0 ? `❌ NO CONFORME — ${ncs} no conformidad(es)` : obs > 0 ? `⚠️ CONFORME con ${obs} observación(es)` : '✅ CONFORME';
+            let msg = ncs > 0 ? `❌ NO CONFORME — ${ncs} no conformidad(es)` : obs > 0 ? `️ CONFORME con ${obs} observación(es)` : '✅ CONFORME';
             showToast(msg, ncs > 0 ? 'error' : obs > 0 ? 'warning' : 'success');
         }
 
         // ============================================
-        // GENERACIÓN DE PDF FORMAL
+        // GENERACIÓN DE PDF PROFESIONAL
         // ============================================
         async function generateFormalPDF() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
+            
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pageWidth = doc.internal.pageSize.getWidth(); const margin = 15; let y = 15;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 15;
+            let y = 15;
 
-            doc.setFillColor(30, 64, 175); doc.rect(0, 0, pageWidth, 35, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont('helvetica', 'bold');
-            doc.text('OBATOWN COMPANY', margin, 18);
-            doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-            doc.text('Departamento de Calidad — ISO 9001:2015', margin, 25);
-            doc.text('REPORTE DE INSPECCIÓN EN PLANTA', margin, 30);
-            doc.setFontSize(9);
-            doc.text(`Fecha: ${new Date().toLocaleString('es-AR')}`, pageWidth - margin, 18, { align: 'right' });
-            doc.text(`OT: ${ot}`, pageWidth - margin, 24, { align: 'right' });
+            // ENCABEZADO PROFESIONAL CON MEMBRETE
+            doc.setFillColor(30, 64, 175);
+            doc.rect(0, 0, pageWidth, 40, 'F');
             
-            y = 45; doc.setTextColor(30, 41, 59); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text('1. DATOS DE TRAZABILIDAD', margin, y); y += 8;
-            const traceData = [
-                ['Cliente', document.getElementById('cliente').value || '—'], ['Responsable / Operario', document.getElementById('operario').value || '—'],
-                ['Sector', document.getElementById('sectorExcel').value || '—'], ['Etapa / Proceso', document.getElementById('etapa').value || '—'],
-                ['Inspector', document.getElementById('inspector').value || '—'], ['Turno', document.getElementById('turno').value || '—'],
-                ['Descripción', document.getElementById('descripcion').value || '—']
+            // Logo/texto de empresa
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('OBATOWN COMPANY', margin, 20);
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Departamento de Calidad — ISO 9001:2015', margin, 28);
+            doc.text('Sistema de Gestión de Calidad', margin, 33);
+            
+            // Número de documento
+            doc.setFontSize(10);
+            doc.text(`Documento N°: INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`, pageWidth - margin, 20, { align: 'right' });
+            doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, 28, { align: 'right' });
+            doc.text(`Página 1 de 1`, pageWidth - margin, 35, { align: 'right' });
+            
+            y = 50;
+            
+            // TÍTULO DEL DOCUMENTO
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INFORME DE INSPECCIÓN DE CALIDAD', margin, y);
+            y += 10;
+            
+            // INTRODUCCIÓN
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            const introText = [
+                'El presente documento certifica los resultados de la inspección de calidad realizada conforme',
+                'a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.',
+                'Este informe es un documento oficial que forma parte del registro de calidad de la organización.'
             ];
-            doc.autoTable({ startY: y, body: traceData, margin: { left: margin, right: margin }, theme: 'grid', styles: { fontSize: 9, cellPadding: 3 }, columnStyles: { 0: { fontStyle: 'bold', fillColor: [241, 245, 249], width: 50 } } });
+            introText.forEach(line => {
+                doc.text(line, margin, y);
+                y += 5;
+            });
+            y += 5;
+            
+            // SECCIÓN 1: DATOS DE TRAZABILIDAD
+            doc.setFillColor(241, 245, 249);
+            doc.rect(margin - 2, y - 5, pageWidth - 2 * margin + 4, 55, 'F');
+            
+            doc.setTextColor(30, 64, 175);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. DATOS DE TRAZABILIDAD', margin, y);
+            y += 8;
+            
+            const otData = otsData.find(o => o.ot === ot) || {};
+            const traceData = [
+                ['Orden de Trabajo (OT)', ot],
+                ['Cliente', document.getElementById('cliente').value || '—'],
+                ['Responsable / Operario', document.getElementById('operario').value || '—'],
+                ['Sector', document.getElementById('sectorExcel').value || '—'],
+                ['Etapa / Proceso', document.getElementById('etapa').value || '—'],
+                ['Inspector', document.getElementById('inspector').value || '—'],
+                ['Turno', document.getElementById('turno').value || '—'],
+                ['Descripción del Trabajo', document.getElementById('descripcion').value || '—']
+            ];
+            
+            doc.autoTable({
+                startY: y,
+                body: traceData,
+                margin: { left: margin, right: margin },
+                theme: 'grid',
+                styles: { fontSize: 9, cellPadding: 3, fillColor: [255, 255, 255] },
+                columnStyles: { 0: { fontStyle: 'bold', fillColor: [241, 245, 249], width: 55 } }
+            });
             y = doc.lastAutoTable.finalY + 10;
-
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text('2. RESULTADOS DE INSPECCIÓN', margin, y); y += 5;
+            
+            // SECCIÓN 2: RESULTADOS DE INSPECCIÓN
+            doc.setTextColor(30, 64, 175);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('2. RESULTADOS DE INSPECCIÓN', margin, y);
+            y += 8;
+            
             const tableData = [];
             Object.keys(inspectionItems).forEach(typeId => {
-                const type = inspectionTypes.find(t => t.id === typeId); const items = getItemsForType(typeId);
+                const type = inspectionTypes.find(t => t.id === typeId);
+                const items = getItemsForType(typeId);
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
                         const statusText = { ok: 'Conforme', nc: 'No Conforme', obs: 'Observación', na: 'No Aplica' }[item.status] || item.status;
@@ -1123,8 +1313,16 @@
                     }
                 });
             });
+            
             if (tableData.length > 0) {
-                doc.autoTable({ startY: y, head: [['Tipo', 'Ítem', 'Estado', 'Valor', 'Observación']], body: tableData, margin: { left: margin, right: margin }, theme: 'striped', styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+                doc.autoTable({
+                    startY: y,
+                    head: [['Tipo de Inspección', 'Ítem Evaluado', 'Estado', 'Valor Medido', 'Observaciones']],
+                    body: tableData,
+                    margin: { left: margin, right: margin },
+                    theme: 'striped',
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 9 },
                     didParseCell: (hookData) => {
                         if (hookData.section === 'body' && hookData.column.index === 2) {
                             if (hookData.cell.raw.includes('Conforme')) hookData.cell.styles.textColor = [16, 185, 129];
@@ -1135,70 +1333,295 @@
                 });
                 y = doc.lastAutoTable.finalY + 10;
             }
-
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text('3. EVIDENCIAS FOTOGRÁFICAS POR ÍTEM', margin, y); y += 5;
+            
+            // SECCIÓN 3: EVIDENCIAS FOTOGRÁFICAS
+            doc.setTextColor(30, 64, 175);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('3. EVIDENCIAS FOTOGRÁFICAS POR ÍTEM', margin, y);
+            y += 8;
+            
             let hasItemPhotos = false;
             Object.keys(inspectionItems).forEach(typeId => {
-                const type = inspectionTypes.find(t => t.id === typeId); const items = getItemsForType(typeId);
+                const type = inspectionTypes.find(t => t.id === typeId);
+                const items = getItemsForType(typeId);
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.photos && item.photos.length > 0) {
                         hasItemPhotos = true;
-                        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.text(`${type.label} - ${items[idx]}`, margin, y); y += 5;
+                        if (y > 240) { doc.addPage(); y = 20; }
+                        
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(30, 41, 59);
+                        doc.text(`${type.label} - ${items[idx]}`, margin, y);
+                        y += 5;
+                        
                         item.photos.forEach((photo) => {
                             if (y > 250) { doc.addPage(); y = 20; }
                             try {
                                 doc.addImage(photo.data, 'JPEG', margin, y, 40, 30);
-                                doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.text(photo.name.substring(0, 30), margin + 42, y + 5);
+                                doc.setFontSize(7);
+                                doc.setFont('helvetica', 'normal');
+                                doc.setTextColor(100);
+                                doc.text(photo.name.substring(0, 40), margin + 42, y + 5);
                                 y += 32;
-                            } catch (e) { doc.text(`[Foto: ${photo.name}]`, margin, y); y += 5; }
+                            } catch (e) {
+                                doc.text(`[Foto: ${photo.name}]`, margin, y);
+                                y += 5;
+                            }
                         });
                         y += 3;
                     }
                 });
             });
-            if (!hasItemPhotos) { doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.text('No se adjuntaron fotos a los ítems.', margin, y); y += 10; }
-
+            
+            if (!hasItemPhotos) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(100);
+                doc.text('No se adjuntaron evidencias fotográficas a los ítems evaluados.', margin, y);
+                y += 10;
+            }
+            
+            // SECCIÓN 4: FIRMA
             if (y > 220) { doc.addPage(); y = 20; }
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text('4. FIRMA DEL INSPECTOR', margin, y); y += 5;
-            if (!signaturePad.isEmpty()) { try { doc.addImage(signaturePad.toDataURL('image/png'), 'PNG', margin, y, 60, 20); } catch (e) { doc.text('[Error al cargar firma]', margin, y + 10); } }
-            doc.setDrawColor(100); doc.line(margin, y + 22, margin + 60, y + 22);
-            doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
-            doc.text(document.getElementById('inspector').value || 'Inspector de Calidad', margin, y + 26);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, margin, y + 30);
-
+            
+            doc.setFillColor(241, 245, 249);
+            doc.rect(margin - 2, y - 5, pageWidth - 2 * margin + 4, 50, 'F');
+            
+            doc.setTextColor(30, 64, 175);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4. FIRMA Y CERTIFICACIÓN', margin, y);
+            y += 10;
+            
+            if (!signaturePad.isEmpty()) {
+                try {
+                    doc.addImage(signaturePad.toDataURL('image/png'), 'PNG', margin, y, 60, 25);
+                } catch (e) {
+                    doc.text('[Firma digital no disponible]', margin, y + 10);
+                }
+            }
+            
+            doc.setDrawColor(100);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y + 30, margin + 80, y + 30);
+            
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80);
+            doc.text(`Inspector: ${document.getElementById('inspector').value || '_______________________'}`, margin, y + 35);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, margin, y + 40);
+            
+            // PIE DE PÁGINA
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i); doc.setDrawColor(200); doc.line(margin, 285, pageWidth - margin, 285);
-                doc.setFontSize(8); doc.setTextColor(120);
-                doc.text(`OBATOWN — Departamento de Calidad | ISO 9001:2015 | Página ${i} de ${pageCount}`, pageWidth / 2, 290, { align: 'center' });
+                doc.setPage(i);
+                doc.setDrawColor(200);
+                doc.setLineWidth(0.3);
+                doc.line(margin, 285, pageWidth - margin, 285);
+                
+                doc.setFontSize(8);
+                doc.setTextColor(120);
+                doc.text('OBATOWN Company — Departamento de Calidad', pageWidth / 2, 290, { align: 'center' });
+                doc.text('ISO 9001:2015 — Documento Controlado', pageWidth / 2, 295, { align: 'center' });
+                doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, 295, { align: 'right' });
             }
-            doc.save(`Inspeccion_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
-            showToast('📄 PDF Formal generado con fotos por ítem', 'success');
+            
+            doc.save(`INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
+            showToast('📄 PDF Profesional generado con imágenes', 'success');
         }
 
         async function generateFormalWord() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            const fecha = new Date().toLocaleDateString('es-AR'); const inspector = document.getElementById('inspector').value || 'No especificado';
+            
+            const fecha = new Date().toLocaleDateString('es-AR');
+            const inspector = document.getElementById('inspector').value || 'No especificado';
+            const otData = otsData.find(o => o.ot === ot) || {};
+            
+            // Construir tabla de resultados con imágenes
             let itemsHtml = '';
             Object.keys(inspectionItems).forEach(typeId => {
-                const type = inspectionTypes.find(t => t.id === typeId); const items = getItemsForType(typeId);
-                itemsHtml += `<h3 style="color:#1e40af; margin-top:15px; border-bottom:1px solid #ccc; padding-bottom:5px;">${type.icon} ${type.label}</h3>`;
-                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:11pt; margin-bottom:15px;"><tr style="background:#f1f5f9;"><th style="border:1px solid #ccc; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Observación</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Fotos</th></tr>`;
+                const type = inspectionTypes.find(t => t.id === typeId);
+                const items = getItemsForType(typeId);
+                itemsHtml += `<h3 style="color:#1e40af; margin-top:20px; border-bottom:2px solid #1e40af; padding-bottom:5px; font-size:14pt;">${type.icon} ${type.label}</h3>`;
+                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:10pt; margin-bottom:15px; border:1px solid #ddd;">
+                    <tr style="background:#1e40af; color:white;"><th style="border:1px solid #ddd; padding:8px; text-align:left;">Ítem</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Estado</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Valor</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Observación</th><th style="border:1px solid #ddd; padding:8px; text-align:left;">Imágenes</th></tr>`;
+                
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
                         const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
                         const photoCount = item.photos ? item.photos.length : 0;
-                        itemsHtml += `<tr><td style="border:1px solid #ccc; padding:6px;">${items[idx]}</td><td style="border:1px solid #ccc; padding:6px;">${statusText}</td><td style="border:1px solid #ccc; padding:6px;">${item.value || '—'}</td><td style="border:1px solid #ccc; padding:6px;">${item.obs || '—'}</td><td style="border:1px solid #ccc; padding:6px;">${photoCount > 0 ? `📷 ${photoCount} foto(s)` : '—'}</td></tr>`;
+                        let photosHtml = photoCount > 0 ? ` ${photoCount} imagen(es)` : '—';
+                        
+                        itemsHtml += `<tr>
+                            <td style="border:1px solid #ddd; padding:6px;">${items[idx]}</td>
+                            <td style="border:1px solid #ddd; padding:6px;">${statusText}</td>
+                            <td style="border:1px solid #ddd; padding:6px;">${item.value || '—'}</td>
+                            <td style="border:1px solid #ddd; padding:6px;">${item.obs || '—'}</td>
+                            <td style="border:1px solid #ddd; padding:6px;">${photosHtml}</td>
+                        </tr>`;
+                        
+                        // Agregar imágenes inline si existen
+                        if (item.photos && item.photos.length > 0) {
+                            itemsHtml += `<tr><td colspan="5" style="padding:10px; background:#f8fafc;">`;
+                            item.photos.forEach(photo => {
+                                itemsHtml += `<img src="${photo.data}" style="max-width:150px; margin:5px; border:1px solid #ddd; border-radius:4px;" />`;
+                            });
+                            itemsHtml += `</td></tr>`;
+                        }
                     }
                 });
                 itemsHtml += `</table>`;
             });
-            const htmlContent = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="utf-8"><title>Reporte de Inspección</title><style>body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; }.header { background: #1e40af; color: white; padding: 20px; text-align: center; }.header h1 { margin: 0; font-size: 24pt; }.header p { margin: 5px 0 0; font-size: 12pt; opacity: 0.9; }.section { margin: 20px 0; }.section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 5px; font-size: 16pt; }.info-table { width: 100%; border-collapse: collapse; font-size: 11pt; }.info-table td { border: 1px solid #ddd; padding: 8px; }.info-table td:first-child { font-weight: bold; background: #f8fafc; width: 30%; }.footer { margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 9pt; color: #666; text-align: center; }</style></head><body><div class="header"><h1>OBATOWN COMPANY</h1><p>Departamento de Calidad — ISO 9001:2015</p><p>REPORTE DE INSPECCIÓN EN PLANTA</p></div><div class="section"><h2>1. Datos de Trazabilidad</h2><table class="info-table"><tr><td>Orden de Trabajo (OT)</td><td>${ot}</td></tr><tr><td>Cliente</td><td>${document.getElementById('cliente').value || '—'}</td></tr><tr><td>Responsable / Operario</td><td>${document.getElementById('operario').value || '—'}</td></tr><tr><td>Sector</td><td>${document.getElementById('sectorExcel').value || '—'}</td></tr><tr><td>Etapa / Proceso</td><td>${document.getElementById('etapa').value || '—'}</td></tr><tr><td>Inspector</td><td>${inspector}</td></tr><tr><td>Fecha de Inspección</td><td>${fecha}</td></tr><tr><td>Descripción del Trabajo</td><td>${document.getElementById('descripcion').value || '—'}</td></tr></table></div><div class="section"><h2>2. Resultados de Inspección</h2>${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}</div><div class="section"><h2>3. Firma del Inspector</h2><p><strong>${inspector}</strong></p><p>Fecha: ${fecha}</p>${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:300px; border:1px solid #ccc;" />` : '<p><em>Firma no registrada</em></p>'}</div><div class="footer">OBATOWN — Departamento de Calidad | ISO 9001:2015 | Documento generado electrónicamente</div></body></html>`;
+            
+            const htmlContent = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Informe de Inspección - OT ${ot}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.5; }
+                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 30px; text-align: center; }
+                        .header h1 { margin: 0; font-size: 28pt; font-weight: bold; }
+                        .header p { margin: 8px 0 0; font-size: 12pt; opacity: 0.95; }
+                        .doc-info { background: #f1f5f9; padding: 15px; margin: 20px 0; border-left: 4px solid #1e40af; }
+                        .section { margin: 25px 0; }
+                        .section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 8px; font-size: 16pt; margin-bottom: 15px; }
+                        .section h3 { color: #334155; font-size: 12pt; margin-top: 15px; }
+                        .info-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+                        .info-table td { border: 1px solid #ddd; padding: 8px; }
+                        .info-table td:first-child { font-weight: bold; background: #f8fafc; width: 35%; }
+                        .intro { background: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0; font-style: italic; color: #475569; }
+                        .signature { margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+                        .footer { margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 15px; font-size: 9pt; color: #64748b; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background: #1e40af; color: white; font-weight: bold; }
+                        img { max-width: 200px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>OBATOWN COMPANY</h1>
+                        <p>Departamento de Calidad — ISO 9001:2015</p>
+                        <p>INFORME DE INSPECCIÓN DE CALIDAD</p>
+                    </div>
+                    
+                    <div class="doc-info">
+                        <strong>Documento N°:</strong> INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}<br>
+                        <strong>Fecha de Emisión:</strong> ${fecha}<br>
+                        <strong>OT:</strong> ${ot}
+                    </div>
+                    
+                    <div class="intro">
+                        El presente documento certifica los resultados de la inspección de calidad realizada conforme a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015. Este informe es un documento oficial que forma parte del registro de calidad de la organización.
+                    </div>
+                    
+                    <div class="section">
+                        <h2>1. DATOS DE TRAZABILIDAD</h2>
+                        <table class="info-table">
+                            <tr><td>Orden de Trabajo (OT)</td><td>${ot}</td></tr>
+                            <tr><td>Cliente</td><td>${document.getElementById('cliente').value || '—'}</td></tr>
+                            <tr><td>Responsable / Operario</td><td>${document.getElementById('operario').value || '—'}</td></tr>
+                            <tr><td>Sector</td><td>${document.getElementById('sectorExcel').value || '—'}</td></tr>
+                            <tr><td>Etapa / Proceso</td><td>${document.getElementById('etapa').value || '—'}</td></tr>
+                            <tr><td>Inspector</td><td>${inspector}</td></tr>
+                            <tr><td>Turno</td><td>${document.getElementById('turno').value || '—'}</td></tr>
+                            <tr><td>Descripción del Trabajo</td><td>${document.getElementById('descripcion').value || '—'}</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>2. RESULTADOS DE INSPECCIÓN</h2>
+                        ${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}
+                    </div>
+                    
+                    <div class="signature">
+                        <h2>3. FIRMA Y CERTIFICACIÓN</h2>
+                        <p><strong>Inspector de Calidad:</strong> ${inspector}</p>
+                        <p><strong>Fecha:</strong> ${fecha}</p>
+                        ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:250px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>OBATOWN Company — Departamento de Calidad</strong></p>
+                        <p>ISO 9001:2015 — Documento Controlado</p>
+                        <p>Este documento es propiedad de OBATOWN Company y su contenido es confidencial</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob); const a = document.createElement('a');
-            a.href = url; a.download = `Inspeccion_OT${ot}_${new Date().toISOString().split('T')[0]}.doc`; a.click(); URL.revokeObjectURL(url);
-            showToast('📝 Word Formal generado', 'success');
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.doc`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📝 Word Profesional generado con imágenes', 'success');
+        }
+
+        // ============================================
+        // EMAIL AUTOMÁTICO CON CORREOS SELECCIONADOS
+        // ============================================
+        function prepareEmail() {
+            const ot = document.getElementById('otSelect').value;
+            if (!ot) return showToast('Seleccioná una OT primero', 'warning');
+            
+            const selectedEmails = [];
+            const selectedNames = [];
+            document.querySelectorAll('.contact-item input[type="checkbox"]:checked').forEach(cb => {
+                selectedEmails.push(cb.value);
+                selectedNames.push(cb.dataset.name);
+            });
+            
+            if (selectedEmails.length === 0) return showToast('⚠️ Seleccioná al menos un destinatario', 'warning');
+            
+            const inspector = document.getElementById('inspector').value || 'Inspector de Calidad';
+            const otData = otsData.find(o => o.ot === ot) || {};
+            const subject = `INFORME DE INSPECCIÓN - OT ${ot} - ${otData.cliente || 'Cliente'}`;
+            
+            const body = `Estimados,
+
+Por medio del presente se remite el informe de inspección de calidad correspondiente a la Orden de Trabajo N° ${ot}.
+
+📋 DATOS DEL INFORME:
+• OT: ${ot}
+• Cliente: ${otData.cliente || '—'}
+• Inspector: ${inspector}
+• Fecha: ${new Date().toLocaleDateString('es-AR')}
+• Estado: ${document.getElementById('estadoExcel').value || '—'}
+
+📎 DOCUMENTOS ADJUNTOS:
+• Informe de Inspección en formato PDF
+• Informe en formato Word (con imágenes)
+• Evidencias fotográficas y documentación técnica
+
+El informe completo se encuentra disponible en Google Drive y/o adjunto a este correo.
+
+Quedamos a disposición para cualquier consulta.
+
+Saludos cordiales,
+
+${inspector}
+Departamento de Calidad
+OBATOWN Company
+ISO 9001:2015
+
+---
+Destinatarios: ${selectedNames.join(', ')}
+`;
+            
+            // Crear link mailto con todos los correos
+            const mailtoLink = `mailto:${selectedEmails.join(';')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Abrir cliente de correo
+            window.location.href = mailtoLink;
+            
+            showToast(`✅ Email preparado para ${selectedEmails.length} destinatarios`, 'success');
         }
 
         // ============================================
@@ -1224,22 +1647,94 @@
                 await addTraceabilityLog(ot, 'EXPORTACIÓN_ZIP', 'Se empaquetó la carpeta de la OT (modo offline)');
                 showToast('✅ ZIP descargado. Subilo manualmente a Drive', 'success');
             } catch (err) {
-                console.error(err); showToast('❌ Error al empaquetar: ' + err.message, 'error');
+                console.error(err); showToast(' Error al empaquetar: ' + err.message, 'error');
             }
         }
 
-        function prepareEmail() {
-            const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            const selectedEmails = [];
-            document.querySelectorAll('.contact-item input[type="checkbox"]:checked').forEach(cb => selectedEmails.push(cb.value));
-            if (selectedEmails.length === 0) return showToast('⚠️ Seleccioná al menos un destinatario', 'warning');
-            navigator.clipboard.writeText(selectedEmails.join('; ')).then(() => showToast(`✅ ${selectedEmails.length} correos copiados`, 'success')).catch(() => showToast('⚠️ No se pudo copiar', 'warning'));
-            const inspector = document.getElementById('inspector').value || 'Inspector';
-            const subject = `Reporte de Inspección de Calidad - OT ${ot}`;
-            const body = `Estimados,\n\nSe adjunta el reporte de inspección de calidad correspondiente a la OT ${ot}.\n\nInspector: ${inspector}\nFecha: ${new Date().toLocaleDateString('es-AR')}\n\nLos archivos se encuentran en Google Drive o adjuntos en este correo.\n\nSaludos cordiales,\nDepartamento de Calidad - OBATOWN`;
-            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            showToast('💡 Pegá los correos en "Para:"', 'info');
+        // ============================================
+        // CONTROL DE MATERIALES
+        // ============================================
+        function handleMaterialPhoto(input, checkNum) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                materialPhotos[checkNum] = {
+                    data: e.target.result,
+                    name: file.name,
+                    date: new Date().toISOString()
+                };
+                showToast(`✅ Foto adjunta a verificación ${checkNum}`, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function clearMaterialSignature() {
+            if (materialSignaturePad) materialSignaturePad.clear();
+        }
+        
+        function saveMaterialSignature() {
+            if (!materialSignaturePad || materialSignaturePad.isEmpty()) return showToast('Firmá primero', 'warning');
+            localStorage.setItem('obatown_material_signature', materialSignaturePad.toDataURL());
+            showToast('✅ Firma guardada', 'success');
+        }
+        
+        function saveMaterialControl() {
+            const ot = document.getElementById('matOtSelect').value;
+            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
+            
+            const materialData = {
+                ot: ot,
+                fecha: document.getElementById('matFecha').value,
+                responsable: document.getElementById('matResponsable').value,
+                descripcion: document.getElementById('matDescripcion').value,
+                cantidad: document.getElementById('matCantidad').value,
+                unidad: document.getElementById('matUnidad').value,
+                proveedor: document.getElementById('matProveedor').value,
+                certificado: document.getElementById('matCertificado').value,
+                verificaciones: {
+                    certificado: { estado: document.getElementById('matCheck1').value, obs: document.getElementById('matCheck1Obs').value },
+                    visual: { estado: document.getElementById('matCheck2').value, obs: document.getElementById('matCheck2Obs').value },
+                    medidas: { estado: document.getElementById('matCheck3').value, obs: document.getElementById('matCheck3Obs').value },
+                    documentacion: { estado: document.getElementById('matCheck4').value, obs: document.getElementById('matCheck4Obs').value }
+                },
+                fotos: materialPhotos,
+                fechaRegistro: new Date().toISOString()
+            };
+            
+            // Guardar en IndexedDB
+            localforage.getItem('material_controls').then(controls => {
+                if (!controls) controls = [];
+                controls.push(materialData);
+                localforage.setItem('material_controls', controls).then(() => {
+                    showToast('✅ Control de material guardado correctamente', 'success');
+                    resetMaterialForm();
+                });
+            });
+        }
+        
+        function generateMaterialPDF() {
+            const ot = document.getElementById('matOtSelect').value;
+            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
+            showToast('📄 Generando PDF de control de material...', 'info');
+            // Implementación similar a generateFormalPDF pero para materiales
+        }
+        
+        function resetMaterialForm() {
+            document.getElementById('matOtSelect').value = '';
+            document.getElementById('matCliente').value = '';
+            document.getElementById('matResponsable').value = '';
+            document.getElementById('matDescripcion').value = '';
+            document.getElementById('matCantidad').value = '';
+            document.getElementById('matUnidad').value = '';
+            document.getElementById('matProveedor').value = '';
+            document.getElementById('matCertificado').value = '';
+            document.querySelectorAll('.mat-check-select').forEach(select => select.value = '');
+            document.querySelectorAll('[id$="Obs"]').forEach(input => input.value = '');
+            materialPhotos = {};
+            if (materialSignaturePad) materialSignaturePad.clear();
+            showToast('🔄 Formulario reiniciado', 'info');
         }
 
         function resetForm() {
