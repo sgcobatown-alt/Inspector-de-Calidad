@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inspector de Calidad - INMETAL OBATOWN v4.1</title>
+    <title>Inspector de Calidad - INMETAL OBATOWN v4.2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -13,6 +13,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Librería para los gráficos de indicadores -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -20,7 +22,6 @@
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; }
         
         .container { background: white; min-height: 100vh; width: 100%; display: flex; flex-direction: column; }
-        
         @media (min-width: 769px) {
             body { padding: 20px; }
             .container { max-width: 1400px; margin: 0 auto; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); min-height: auto; max-height: 95vh; overflow-y: auto; }
@@ -38,8 +39,8 @@
         .drive-status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; position: sticky; top: 0; z-index: 50; }
-        .nav-tab { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; touch-action: manipulation; }
+        .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; position: sticky; top: 0; z-index: 50; overflow-x: auto; }
+        .nav-tab { flex: 1; min-width: 100px; padding: 12px 5px; text-align: center; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.3s; touch-action: manipulation; white-space: nowrap; }
         .nav-tab:hover { background: #e2e8f0; }
         .nav-tab.active { background: white; color: #1e40af; border-bottom: 3px solid #1e40af; }
         
@@ -194,13 +195,14 @@
 
     <div class="container">
         <header>
-            <h1>🔍 INMETAL OBATOWN <span class="version-badge">v4.1</span></h1>
+            <h1>🔍 INMETAL OBATOWN <span class="version-badge">v4.2</span></h1>
             <p>Industria Metalúrgica — Sistema de Inspección en Planta</p>
         </header>
 
         <div class="nav-tabs">
             <div class="nav-tab active" onclick="switchTab('inspeccion', event)">🔍 Inspección</div>
             <div class="nav-tab" onclick="switchTab('materiales', event)">📦 Materiales</div>
+            <div class="nav-tab" onclick="switchTab('indicadores', event)">📈 Indicadores</div>
             <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla OTs</div>
         </div>
 
@@ -356,7 +358,7 @@
                         <div class="form-group">
                             <label>Orden de Trabajo (OT) *</label>
                             <select id="matOtSelect" onchange="autoFillMaterialOT()">
-                                <option value="">Seleccionar OT...</option>
+                                <option value="">-- Seleccionar OT Activa --</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Cliente</label><input type="text" id="matCliente" readonly></div>
@@ -443,12 +445,36 @@
                     <button class="btn btn-warning" onclick="resetMaterialForm()">🔄 Reiniciar</button>
                 </div>
             </div>
+
+            <!-- TAB: INDICADORES DE PRODUCCIÓN (NUEVO) -->
+            <div id="indicadores" class="tab-content">
+                <div class="import-summary">
+                    <div class="summary-card"><div class="summary-value" id="kpi-total">0</div><div class="summary-label">Total OTs</div></div>
+                    <div class="summary-card" style="border-left-color: #10b981;"><div class="summary-value" id="kpi-activas">0</div><div class="summary-label">Activas / En Proceso</div></div>
+                    <div class="summary-card" style="border-left-color: #f59e0b;"><div class="summary-value" id="kpi-espera">0</div><div class="summary-label">En Espera / Detenidas</div></div>
+                    <div class="summary-card" style="border-left-color: #ef4444;"><div class="summary-value" id="kpi-vencidas">0</div><div class="summary-label">Días Vencidas</div></div>
+                </div>
+
+                <div class="form-section">
+                    <h2>🏭 Distribución de OTs por Sector</h2>
+                    <div style="position: relative; height: 300px; max-width: 600px; margin: 0 auto;">
+                        <canvas id="chartSector"></canvas>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>⏱️ Horas Presupuestadas vs. Aplicadas (Top 5 Sectores)</h2>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="chartHoras"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <footer>
             <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
             <p>Departamento de Calidad — ISO 9001:2015</p>
-            <p>Sistema de Inspección en Planta v4.1</p>
+            <p>Sistema de Inspección en Planta v4.2</p>
         </footer>
     </div>
 
@@ -554,41 +580,13 @@
             return null;
         }
         
-        function parseHoras(value) {
-            if (value == null || String(value).trim() === '' || String(value).trim() === '-' || String(value).trim() === '  -   -  : :') return null;
-            const str = String(value).trim();
-            const match = str.match(/^(\d+):(\d{2})(?::(\d{2}))?$/);
-            if (match) return parseInt(match[1]) + (parseInt(match[2]) / 60);
-            const num = parseFloat(str);
-            return !isNaN(num) ? num : null;
-        }
-        
-        function formatHoras(h) {
-            if (h == null) return '—';
-            return `${Math.floor(h)}:${String(Math.round((h - Math.floor(h)) * 60)).padStart(2, '0')}`;
-        }
-        
-        function calculateDaysRemaining(endDate) {
-            if (!endDate) return null;
-            const today = new Date(); today.setHours(0,0,0,0);
-            const end = new Date(endDate); end.setHours(0,0,0,0);
-            return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-        }
-        
-        function getSemaforoClass(daysRemaining, estadoManual) {
-            if (estadoManual === 'finalizada') return 'semaforo-azul';
-            if (estadoManual === 'rechazada') return 'semaforo-gris';
-            if (daysRemaining === null) return 'semaforo-gris';
-            if (daysRemaining < 0) return 'semaforo-rojo';
-            if (daysRemaining <= 3) return 'semaforo-amarillo';
-            return 'semaforo-verde';
-        }
-        
-        function formatDaysText(daysRemaining) {
-            if (daysRemaining === null) return '—';
-            if (daysRemaining < 0) return `Vencida hace ${Math.abs(daysRemaining)}d`;
-            if (daysRemaining === 0) return 'Vence hoy';
-            return daysRemaining === 1 ? '1 día' : `${daysRemaining} días`;
+        function parseHorasString(horaStr) {
+            if (!horaStr || typeof horaStr !== 'string' || horaStr.includes('-') || horaStr.trim() === '') return 0;
+            const parts = horaStr.split(':');
+            if (parts.length === 2) {
+                return parseFloat(parts[0]) + (parseFloat(parts[1]) / 60);
+            }
+            return 0;
         }
 
         let otsData = JSON.parse(localStorage.getItem('inmetal_ots_v40') || '[]');
@@ -759,7 +757,7 @@
             renderTypeGrid();
             renderOTTable();
             updateOTSelect();
-            updateMaterialOTSelect(); // Asegurar que se cargue al inicio
+            updateMaterialOTSelect(); 
             initSignaturePad();
             initMaterialSignaturePad();
             initUploadZone();
@@ -795,21 +793,17 @@
             input.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
         }
         
-        // --- CORRECCIÓN FIRMA: Guardar y restaurar al redimensionar ---
         function initSignaturePad() {
             const canvas = document.getElementById('signature-canvas');
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: 'rgb(0, 0, 0)' });
             function resize() {
-                const data = signaturePad.toData(); // 1. Guardar el dibujo actual
+                const data = signaturePad.toData();
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext('2d').scale(ratio, ratio);
-                if (data && data.length > 0) {
-                    signaturePad.fromData(data); // 2. Restaurar el dibujo
-                } else {
-                    signaturePad.clear();
-                }
+                if (data && data.length > 0) signaturePad.fromData(data);
+                else signaturePad.clear();
             }
             resize();
             window.addEventListener('resize', resize);
@@ -819,16 +813,13 @@
             const canvas = document.getElementById('materialSignatureCanvas');
             materialSignaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: 'rgb(0, 0, 0)' });
             function resize() {
-                const data = materialSignaturePad.toData(); // 1. Guardar el dibujo actual
+                const data = materialSignaturePad.toData();
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext('2d').scale(ratio, ratio);
-                if (data && data.length > 0) {
-                    materialSignaturePad.fromData(data); // 2. Restaurar el dibujo
-                } else {
-                    materialSignaturePad.clear();
-                }
+                if (data && data.length > 0) materialSignaturePad.fromData(data);
+                else materialSignaturePad.clear();
             }
             resize();
             window.addEventListener('resize', resize);
@@ -884,8 +875,8 @@
                             fechaEntrega: idx.fechaEntrega >= 0 ? parseDate(row[idx.fechaEntrega]) : null,
                             fechaReal: idx.fechaReal >= 0 ? parseDate(row[idx.fechaReal]) : null,
                             dias: idx.dias >= 0 ? parseInt(row[idx.dias]) : null,
-                            hsPresup: idx.hsPresup >= 0 ? parseHoras(row[idx.hsPresup]) : null,
-                            hsAplic: idx.hsAplic >= 0 ? parseHoras(row[idx.hsAplic]) : null,
+                            hsPresup: idx.hsPresup >= 0 ? parseHorasString(row[idx.hsPresup]) : null,
+                            hsAplic: idx.hsAplic >= 0 ? parseHorasString(row[idx.hsAplic]) : null,
                             estadoPlanilla: 'cargada', estadoManual: existing?.estadoManual || 'activa',
                             ultimaActualizacion: importDate, esNueva: !existing
                         };
@@ -919,18 +910,19 @@
             let filteredData = otsData;
             if (currentFilter === 'activas') filteredData = otsData.filter(o => o.estadoManual === 'activa');
             else if (currentFilter === 'finalizadas') filteredData = otsData.filter(o => o.estadoManual === 'finalizada');
-            else if (currentFilter === 'vencidas') filteredData = otsData.filter(o => { const d = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega); return d !== null && d < 0 && o.estadoManual === 'activa'; });
+            else if (currentFilter === 'vencidas') filteredData = otsData.filter(o => { const d = o.dias != null ? o.dias : (o.fechaEntrega ? Math.ceil((new Date(o.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24)) : null); return d !== null && d < 0 && o.estadoManual === 'activa'; });
             
             if (filteredData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:30px; color:#64748b;">No hay OTs para mostrar</td></tr>'; return; }
             
             filteredData.forEach((ot) => {
-                const days = ot.dias != null ? ot.dias : calculateDaysRemaining(ot.fechaEntrega);
-                const semaforoClass = getSemaforoClass(days, ot.estadoManual);
-                const daysText = (ot.estadoManual === 'finalizada') ? 'Finalizada' : (ot.estadoManual === 'rechazada') ? 'Rechazada' : formatDaysText(days);
-                let horasText = '—', horasClass = 'horas-cell';
+                const days = ot.dias != null ? ot.dias : (ot.fechaEntrega ? Math.ceil((new Date(ot.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24)) : null);
+                const semaforoClass = (ot.estadoManual === 'finalizada') ? 'semaforo-azul' : (ot.estadoManual === 'rechazada') ? 'semaforo-gris' : (days === null) ? 'semaforo-gris' : (days < 0) ? 'semaforo-rojo' : (days <= 3) ? 'semaforo-amarillo' : 'semaforo-verde';
+                const daysText = (ot.estadoManual === 'finalizada') ? 'Finalizada' : (ot.estadoManual === 'rechazada') ? 'Rechazada' : (days === null ? '—' : (days < 0 ? `Vencida hace ${Math.abs(days)}d` : (days === 0 ? 'Vence hoy' : `${days} días`)));
+                
+                let horasText = '—';
                 if (ot.hsPresup != null || ot.hsAplic != null) {
-                    horasText = `${formatHoras(ot.hsPresup)} / ${formatHoras(ot.hsAplic)}`;
-                    if (ot.hsPresup != null && ot.hsAplic != null && ot.hsAplic > ot.hsPresup) horasClass += ' horas-excedidas';
+                    const formatH = (h) => h === null ? '—' : `${Math.floor(h)}:${String(Math.round((h - Math.floor(h)) * 60)).padStart(2, '0')}`;
+                    horasText = `${formatH(ot.hsPresup)} / ${formatH(ot.hsAplic)}`;
                 }
                 const row = document.createElement('tr');
                 if (ot.esNueva) row.classList.add('row-new');
@@ -939,10 +931,10 @@
                     <td class="ot-number">${ot.ot}</td><td class="cliente-cell" title="${ot.cliente}">${ot.cliente || '—'}</td>
                     <td class="desc-cell" title="${ot.descripcion}">${ot.descripcion || '—'}</td><td>${ot.sector || '—'}</td>
                     <td>${ot.responsable || '—'}</td><td>${ot.estadoExcel || '—'}</td>
-                    <td class="fecha-cell">${ot.fechaInicio ? formatDateDisplay(ot.fechaInicio) : '—'}</td>
-                    <td class="fecha-cell">${ot.fechaEntrega ? formatDateDisplay(ot.fechaEntrega) : '—'}</td>
+                    <td class="fecha-cell">${ot.fechaInicio ? ot.fechaInicio.split('-').reverse().join('/') : '—'}</td>
+                    <td class="fecha-cell">${ot.fechaEntrega ? ot.fechaEntrega.split('-').reverse().join('/') : '—'}</td>
                     <td><span class="semaforo ${semaforoClass} dias-restantes">${daysText}</span></td>
-                    <td class="${horasClass}">${horasText}</td>
+                    <td>${horasText}</td>
                     <td><span class="status-badge status-${ot.estadoManual}">${ot.estadoManual}</span></td>
                     <td>${ot.estadoManual === 'activa' ? `<button class="action-btn btn-select" onclick="selectOT('${ot.ot}')">🔍</button><button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅</button><button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌</button>` : '<span style="color:#64748b; font-size:0.8em;">Cerrada</span>'}</td>
                 `;
@@ -950,7 +942,6 @@
             });
         }
         
-        function formatDateDisplay(isoDate) { if (!isoDate) return '—'; const [y, m, d] = isoDate.split('-'); return `${d}/${m}/${y}`; }
         function filterTable(filter, event) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -961,7 +952,7 @@
             document.getElementById('countTodas').textContent = otsData.length;
             document.getElementById('countActivas').textContent = otsData.filter(o => o.estadoManual === 'activa').length;
             document.getElementById('countFinalizadas').textContent = otsData.filter(o => o.estadoManual === 'finalizada').length;
-            document.getElementById('countVencidas').textContent = otsData.filter(o => { const d = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega); return d !== null && d < 0 && o.estadoManual === 'activa'; }).length;
+            document.getElementById('countVencidas').textContent = otsData.filter(o => { const d = o.dias != null ? o.dias : (o.fechaEntrega ? Math.ceil((new Date(o.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24)) : null); return d !== null && d < 0 && o.estadoManual === 'activa'; }).length;
         }
 
         function selectOT(otNumber) {
@@ -998,7 +989,7 @@
             select.innerHTML = '<option value="">Seleccionar OT...</option>';
             otsData.filter(o => o.estadoManual === 'activa').forEach(ot => {
                 const opt = document.createElement('option'); opt.value = ot.ot;
-                const days = ot.dias != null ? ot.dias : calculateDaysRemaining(ot.fechaEntrega);
+                const days = ot.dias != null ? ot.dias : (ot.fechaEntrega ? Math.ceil((new Date(ot.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24)) : null);
                 const semaforo = days !== null ? (days < 0 ? '🔴' : days <= 3 ? '🟡' : '🟢') : '';
                 opt.textContent = `${ot.esNueva ? '🆕 ' : ''}${semaforo} OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
                 select.appendChild(opt);
@@ -1006,25 +997,31 @@
             if (currentValue) select.value = currentValue;
         }
         
-        // --- CORRECCIÓN SELECTOR DE MATERIALES ---
+        // --- CORRECCIÓN ROBUSTA DEL SELECTOR DE MATERIALES ---
         function updateMaterialOTSelect() {
             const select = document.getElementById('matOtSelect');
             if (!select) return;
+            
             const currentValue = select.value;
-            select.innerHTML = '<option value="">Seleccionar OT...</option>';
+            select.innerHTML = '<option value="">-- Seleccionar OT Activa --</option>';
             
             const activeOTs = otsData.filter(o => o.estadoManual === 'activa');
+            
             if (activeOTs.length === 0) {
                 select.innerHTML = '<option value="">No hay OTs activas cargadas</option>';
+                return;
             }
 
             activeOTs.forEach(ot => {
                 const opt = document.createElement('option');
                 opt.value = ot.ot;
-                opt.textContent = `OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
+                opt.textContent = `OT ${ot.ot} — ${ot.cliente || 'Sin cliente'} (${ot.sector || 'Sin sector'})`;
                 select.appendChild(opt);
             });
-            if (currentValue) select.value = currentValue;
+            
+            if (currentValue && activeOTs.some(o => o.ot === currentValue)) {
+                select.value = currentValue;
+            }
         }
         
         async function autoFillOT() {
@@ -1054,6 +1051,69 @@
             } else {
                 document.getElementById('matCliente').value = '';
             }
+        }
+
+        // ============================================
+        // NUEVO MÓDULO: INDICADORES DE PRODUCCIÓN
+        // ============================================
+        function renderIndicators() {
+            const total = otsData.length;
+            const activasCount = otsData.filter(o => o.estadoManual === 'activa').length;
+            const esperaCount = otsData.filter(o => o.estadoExcel.toLowerCase().includes('espera') || o.estadoExcel.toLowerCase().includes('detenido')).length;
+            const vencidasCount = otsData.filter(o => { const d = o.dias != null ? o.dias : (o.fechaEntrega ? Math.ceil((new Date(o.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24)) : null); return d !== null && d < 0 && o.estadoManual === 'activa'; }).length;
+
+            document.getElementById('kpi-total').textContent = total;
+            document.getElementById('kpi-activas').textContent = activasCount;
+            document.getElementById('kpi-espera').textContent = esperaCount;
+            document.getElementById('kpi-vencidas').textContent = vencidasCount;
+
+            // Gráfico 1: Distribución por Sector
+            const sectores = {};
+            otsData.forEach(ot => {
+                const sec = ot.sector ? ot.sector.trim() : 'Sin Sector';
+                sectores[sec] = (sectores[sec] || 0) + 1;
+            });
+
+            const ctxSector = document.getElementById('chartSector');
+            if (window.myChartSector) window.myChartSector.destroy();
+            window.myChartSector = new Chart(ctxSector, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(sectores),
+                    datasets: [{
+                        data: Object.values(sectores),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+
+            // Gráfico 2: Horas Presupuestadas vs Aplicadas (Top 5)
+            const horasPorSector = {};
+            otsData.forEach(ot => {
+                const sec = ot.sector ? ot.sector.trim() : 'Sin Sector';
+                if (!horasPorSector[sec]) horasPorSector[sec] = { presup: 0, aplic: 0 };
+                horasPorSector[sec].presup += (ot.hsPresup || 0);
+                horasPorSector[sec].aplic += (ot.hsAplic || 0);
+            });
+
+            const sortedSectores = Object.keys(horasPorSector).sort((a, b) => 
+                (horasPorSector[b].presup + horasPorSector[b].aplic) - (horasPorSector[a].presup + horasPorSector[a].aplic)
+            ).slice(0, 5);
+
+            const ctxHoras = document.getElementById('chartHoras');
+            if (window.myChartHoras) window.myChartHoras.destroy();
+            window.myChartHoras = new Chart(ctxHoras, {
+                type: 'bar',
+                data: {
+                    labels: sortedSectores,
+                    datasets: [
+                        { label: 'Horas Presup.', data: sortedSectores.map(s => horasPorSector[s].presup), backgroundColor: '#3b82f6' },
+                        { label: 'Horas Aplicadas', data: sortedSectores.map(s => horasPorSector[s].aplic), backgroundColor: '#f59e0b' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
         }
 
         async function handleFileUpload(input, type) {
@@ -1231,19 +1291,15 @@
         async function generateFormalPDF() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             const pageWidth = doc.internal.pageSize.getWidth();
             const margin = 15;
             let y = 15;
 
-            try {
-                doc.addImage(INMETAL_LOGO_BASE64, 'PNG', margin, y, 50, 20);
-            } catch (e) {
+            try { doc.addImage(INMETAL_LOGO_BASE64, 'PNG', margin, y, 50, 20); } catch (e) {
                 doc.setFillColor(30, 64, 175); doc.rect(margin, y, 50, 20, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-                doc.text('INMETAL', margin + 5, y + 12);
+                doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.text('INMETAL', margin + 5, y + 12);
             }
             
             doc.setTextColor(30, 41, 59); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
@@ -1543,16 +1599,18 @@
             showToast('🔄 Formulario reiniciado', 'info');
         }
 
-        // --- CORRECCIÓN CAMBIO DE PESTAÑA: Refrescar selects ---
+        // --- CONTROL DE CAMBIO DE PESTAÑAS ---
         function switchTab(tab, event) {
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
             
-            // Forzar actualización de los selects al cambiar de pestaña
+            // Forzar actualizaciones al cambiar de pestaña
             if (tab === 'materiales') {
                 updateMaterialOTSelect();
+            } else if (tab === 'indicadores') {
+                renderIndicators();
             } else if (tab === 'inspeccion') {
                 updateOTSelect();
             }
