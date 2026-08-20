@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inspector de Calidad - INMETAL OBATOWN v4.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
@@ -15,141 +15,173 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 25px; text-align: center; }
-        header h1 { font-size: 2.5em; margin-bottom: 5px; }
-        header p { font-size: 1.1em; opacity: 0.9; }
-        .version-badge { display: inline-block; background: #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8em; margin-left: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100%; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; }
         
-        .drive-status { position: fixed; top: 10px; right: 10px; padding: 8px 15px; border-radius: 20px; font-size: 0.85em; font-weight: 600; z-index: 9998; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        /* Contenedor principal: Pantalla completa en móvil, tarjeta en desktop */
+        .container { 
+            background: white; 
+            min-height: 100vh; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        @media (min-width: 769px) {
+            body { padding: 20px; }
+            .container { 
+                max-width: 1400px; 
+                margin: 0 auto; 
+                border-radius: 15px; 
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+                min-height: auto;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+        }
+
+        header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px; text-align: center; flex-shrink: 0; }
+        header h1 { font-size: 1.8em; margin-bottom: 5px; }
+        header p { font-size: 0.95em; opacity: 0.9; }
+        .version-badge { display: inline-block; background: #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; margin-left: 8px; vertical-align: middle; }
+        
+        .drive-status { position: fixed; top: 10px; right: 10px; padding: 6px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 600; z-index: 9998; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .drive-status.connected { background: #10b981; color: white; }
         .drive-status.disconnected { background: #ef4444; color: white; }
         .drive-status.connecting { background: #f59e0b; color: white; }
-        .drive-status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+        .drive-status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; }
-        .nav-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; position: sticky; top: 0; z-index: 50; }
+        .nav-tab { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.3s; touch-action: manipulation; }
         .nav-tab:hover { background: #e2e8f0; }
         .nav-tab.active { background: white; color: #1e40af; border-bottom: 3px solid #1e40af; }
-        .content { padding: 30px; }
+        
+        .content { padding: 15px; flex: 1; overflow-y: auto; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .import-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-        .summary-card { background: white; border-radius: 10px; padding: 15px; border-left: 4px solid #1e40af; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .summary-value { font-size: 2em; font-weight: 700; color: #1e293b; }
-        .summary-label { color: #64748b; font-size: 0.9em; margin-top: 5px; }
+        .import-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        @media (min-width: 769px) { .import-summary { grid-template-columns: repeat(4, 1fr); gap: 15px; } }
+        .summary-card { background: white; border-radius: 10px; padding: 12px; border-left: 4px solid #1e40af; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .summary-value { font-size: 1.8em; font-weight: 700; color: #1e293b; }
+        .summary-label { color: #64748b; font-size: 0.8em; margin-top: 3px; }
         
-        .upload-zone { border: 3px dashed #1e40af; border-radius: 15px; padding: 50px; text-align: center; background: #eff6ff; cursor: pointer; transition: all 0.3s; }
+        .upload-zone { border: 3px dashed #1e40af; border-radius: 15px; padding: 30px 20px; text-align: center; background: #eff6ff; cursor: pointer; transition: all 0.3s; touch-action: manipulation; }
         .upload-zone:hover { background: #dbeafe; border-color: #3b82f6; }
         .upload-zone.dragover { background: #bfdbfe; border-color: #2563eb; }
-        .upload-icon { font-size: 4em; margin-bottom: 15px; }
-        .upload-text { font-size: 1.2em; color: #1e40af; font-weight: 600; }
-        .upload-hint { color: #64748b; margin-top: 10px; font-size: 0.9em; }
-        .last-update { background: #f0fdf4; border: 1px solid #86efac; padding: 10px; border-radius: 8px; margin-top: 15px; color: #166534; font-size: 0.9em; }
+        .upload-icon { font-size: 3em; margin-bottom: 10px; }
+        .upload-text { font-size: 1.1em; color: #1e40af; font-weight: 600; }
+        .upload-hint { color: #64748b; margin-top: 8px; font-size: 0.85em; }
+        .last-update { background: #f0fdf4; border: 1px solid #86efac; padding: 8px; border-radius: 8px; margin-top: 15px; color: #166534; font-size: 0.85em; }
         
-        .filters { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
-        .filter-btn { padding: 8px 16px; border: 2px solid #e2e8f0; background: white; border-radius: 20px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .filters { display: flex; gap: 8px; margin: 15px 0; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 12px; border: 2px solid #e2e8f0; background: white; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: all 0.3s; touch-action: manipulation; }
         .filter-btn:hover { border-color: #1e40af; }
         .filter-btn.active { background: #1e40af; color: white; border-color: #1e40af; }
-        .filter-btn .count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 10px; margin-left: 5px; font-size: 0.85em; }
+        .filter-btn .count { background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 10px; margin-left: 4px; font-size: 0.8em; }
         .filter-btn.active .count { background: rgba(255,255,255,0.3); }
         
-        .table-container { overflow-x: auto; margin-top: 20px; max-height: 600px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; background: white; }
+        .table-container { overflow-x: auto; margin-top: 15px; max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
         thead { position: sticky; top: 0; z-index: 10; }
-        th { background: #1e40af; color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 0.85em; white-space: nowrap; }
-        td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9em; }
+        th { background: #1e40af; color: white; padding: 10px 8px; text-align: left; font-weight: 600; font-size: 0.8em; white-space: nowrap; }
+        td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; font-size: 0.85em; }
         tr:hover { background: #f8fafc; }
         tr.row-new { background: #f0fdf4; }
         tr.row-closed { opacity: 0.6; background: #f1f5f9; }
-        .status-badge { padding: 5px 12px; border-radius: 15px; font-size: 0.8em; font-weight: 600; display: inline-block; white-space: nowrap; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; display: inline-block; white-space: nowrap; }
         .status-activa { background: #d1fae5; color: #065f46; }
         .status-finalizada { background: #dbeafe; color: #1e40af; }
         .status-rechazada { background: #fee2e2; color: #991b1b; }
-        .action-btn { padding: 5px 10px; margin: 2px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; }
+        .action-btn { padding: 6px 10px; margin: 2px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; touch-action: manipulation; }
         .btn-select { background: #10b981; color: white; }
         .btn-finish { background: #3b82f6; color: white; }
         .btn-reject { background: #ef4444; color: white; }
         
-        .semaforo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; white-space: nowrap; }
+        .semaforo { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; white-space: nowrap; }
         .semaforo-verde { background: #d1fae5; color: #065f46; }
         .semaforo-amarillo { background: #fef3c7; color: #92400e; }
         .semaforo-rojo { background: #fee2e2; color: #991b1b; }
         .semaforo-azul { background: #dbeafe; color: #1e40af; }
         .semaforo-gris { background: #f1f5f9; color: #64748b; }
-        .fecha-cell { font-size: 0.85em; white-space: nowrap; }
+        .fecha-cell { font-size: 0.8em; white-space: nowrap; }
         .dias-restantes { font-weight: 700; }
         .ot-number { font-weight: 700; color: #1e40af; font-family: 'Courier New', monospace; }
-        .cliente-cell, .desc-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cliente-cell, .desc-cell { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .form-section { background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .form-section h2 { color: #1e40af; margin-bottom: 15px; font-size: 1.3em; display: flex; align-items: center; gap: 10px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-section { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .form-section h2 { color: #1e40af; margin-bottom: 12px; font-size: 1.1em; display: flex; align-items: center; gap: 8px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 769px) { .form-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); } }
         .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: 600; margin-bottom: 5px; color: #334155; }
-        .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1em; transition: border 0.3s; }
+        .form-group label { font-weight: 600; margin-bottom: 4px; color: #334155; font-size: 0.9em; }
+        /* Font-size 16px previene zoom automático en iOS al hacer focus */
+        .form-group input, .form-group select, .form-group textarea { 
+            padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border 0.3s; 
+            -webkit-appearance: none; appearance: none;
+        }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1e40af; }
         .form-group.full-width { grid-column: 1 / -1; }
         
-        .contact-areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+        .contact-areas { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+        @media (min-width: 769px) { .contact-areas { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
         .contact-area-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
-        .contact-area-title { font-weight: 700; color: #1e40af; font-size: 0.9em; margin-bottom: 8px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; text-transform: uppercase; }
-        .contact-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.9em; }
-        .contact-item input { margin-top: 3px; cursor: pointer; }
+        .contact-area-title { font-weight: 700; color: #1e40af; font-size: 0.85em; margin-bottom: 8px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; text-transform: uppercase; }
+        .contact-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.85em; }
+        .contact-item input { margin-top: 3px; cursor: pointer; width: 18px; height: 18px; }
         .contact-item label { cursor: pointer; line-height: 1.3; }
-        .contact-item .email-hint { color: #64748b; font-size: 0.85em; display: block; }
+        .contact-item .email-hint { color: #64748b; font-size: 0.8em; display: block; }
         .select-all-area { font-size: 0.8em; color: #3b82f6; cursor: pointer; text-decoration: underline; float: right; }
         
-        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px; }
-        .type-chip { padding: 12px; background: white; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 600; }
-        .type-chip:hover { border-color: #1e40af; transform: translateY(-2px); }
+        .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+        @media (min-width: 769px) { .type-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; } }
+        .type-chip { padding: 10px; background: white; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 600; font-size: 0.9em; touch-action: manipulation; }
+        .type-chip:hover { border-color: #1e40af; }
         .type-chip.selected { background: #10b981; color: white; border-color: #10b981; }
         
-        .progress-container { background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0; }
-        .progress-bar { width: 100%; height: 30px; background: #e2e8f0; border-radius: 15px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .progress-container { background: #f8fafc; padding: 15px; border-radius: 10px; margin: 15px 0; }
+        .progress-bar { width: 100%; height: 25px; background: #e2e8f0; border-radius: 15px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9em; }
         
-        .signature-container { background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0; }
-        #signature-canvas { width: 100%; height: 200px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; touch-action: none; }
+        .signature-container { background: #f8fafc; padding: 15px; border-radius: 10px; margin: 15px 0; }
+        #signature-canvas, #materialSignatureCanvas { width: 100%; height: 180px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; touch-action: none; }
         .signature-actions { display: flex; gap: 10px; margin-top: 10px; }
-
-        .repo-actions { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .repo-list { display: flex; flex-direction: column; gap: 10px; }
-        .repo-item { display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; transition: all 0.2s; }
-        .repo-item:hover { border-color: #1e40af; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .repo-icon { font-size: 1.8em; }
-        .repo-info { flex: 1; }
-        .repo-name { font-weight: 600; color: #1e293b; word-break: break-all; }
-        .repo-meta { font-size: 0.8em; color: #64748b; margin-top: 2px; }
-        .repo-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        
+        .repo-actions { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .repo-list { display: flex; flex-direction: column; gap: 8px; }
+        .repo-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .repo-icon { font-size: 1.5em; }
+        .repo-info { flex: 1; min-width: 0; }
+        .repo-name { font-weight: 600; color: #1e293b; word-break: break-all; font-size: 0.9em; }
+        .repo-meta { font-size: 0.75em; color: #64748b; margin-top: 2px; }
+        .repo-btn { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; touch-action: manipulation; }
         .repo-btn-download { background: #3b82f6; color: white; }
         .repo-btn-delete { background: #fee2e2; color: #ef4444; }
         
-        .traceability-list { max-height: 350px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
-        .log-item { display: grid; grid-template-columns: 130px 90px 1fr 120px; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85em; align-items: center; }
-        .log-item:last-child { border-bottom: none; }
-        .log-time { color: #64748b; font-family: monospace; }
-        .log-action { font-weight: 700; color: #1e40af; text-transform: uppercase; font-size: 0.8em; }
+        .traceability-list { max-height: 300px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+        .log-item { display: grid; grid-template-columns: 1fr; gap: 4px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.8em; }
+        @media (min-width: 769px) { .log-item { grid-template-columns: 130px 90px 1fr 120px; gap: 10px; } }
+        .log-time { color: #64748b; font-family: monospace; font-size: 0.9em; }
+        .log-action { font-weight: 700; color: #1e40af; text-transform: uppercase; }
         .log-detail { color: #334155; word-break: break-word; }
         .log-user { text-align: right; color: #64748b; font-weight: 600; }
+        @media (max-width: 768px) { .log-user { text-align: left; } }
         
-        .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 80px; gap: 10px; margin-bottom: 10px; align-items: center; padding: 10px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .item-row:hover { border-color: #1e40af; }
-        .item-photo-btn { background: #0ea5e9; color: white; border: none; border-radius: 6px; padding: 8px; cursor: pointer; font-size: 1.2em; transition: all 0.2s; position: relative; }
-        .item-photo-btn:hover { background: #0284c7; transform: scale(1.05); }
+        .item-row { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; align-items: center; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+        @media (min-width: 769px) { .item-row { grid-template-columns: 2fr 1fr 1fr 2fr 80px; } }
+        .item-photo-btn { background: #0ea5e9; color: white; border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-size: 1.2em; transition: all 0.2s; position: relative; touch-action: manipulation; }
+        .item-photo-btn:hover { background: #0284c7; }
         .item-photo-btn.has-photos { background: #10b981; }
-        .item-photo-count { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7em; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .item-photo-count { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65em; display: flex; align-items: center; justify-content: center; font-weight: 700; }
         .item-photos-preview { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
-        .item-photo-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
-        .item-photo-thumb:hover { border-color: #1e40af; transform: scale(1.1); }
+        .item-photo-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 2px solid #e2e8f0; cursor: pointer; }
         
-        .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 10px; position: sticky; bottom: 10px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 15px; background: white; border-top: 2px solid #e2e8f0; position: sticky; bottom: 0; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        @media (min-width: 769px) { .action-bar { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; background: #f8fafc; border-radius: 10px; position: sticky; border-top: none; } }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9em; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; touch-action: manipulation; }
+        @media (min-width: 769px) { .btn { padding: 12px 20px; font-size: 1em; } .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); } }
         .btn-primary { background: #1e40af; color: white; }
         .btn-success { background: #10b981; color: white; }
         .btn-secondary { background: #64748b; color: white; }
@@ -159,26 +191,15 @@
         .btn-drive { background: #4285F4; color: white; }
         .btn-drive-offline { background: #f59e0b; color: white; }
         
-        .toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 9999; transform: translateX(400px); transition: transform 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; z-index: 9999; transform: translateX(400px); transition: transform 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.9em; max-width: 90vw; }
         .toast.show { transform: translateX(0); }
         .toast-success { background: #10b981; }
         .toast-error { background: #ef4444; }
         .toast-warning { background: #f59e0b; }
         .toast-info { background: #3b82f6; }
         
-        footer { background: #1e293b; color: white; text-align: center; padding: 20px; margin-top: 30px; }
-        
-        @media (max-width: 768px) {
-            header h1 { font-size: 1.8em; }
-            .form-grid, .contact-areas { grid-template-columns: 1fr; }
-            .nav-tab { font-size: 0.9em; padding: 10px; }
-            .import-summary { grid-template-columns: repeat(2, 1fr); }
-            .action-bar { flex-direction: column; }
-            .btn { width: 100%; justify-content: center; }
-            .log-item { grid-template-columns: 1fr; gap: 2px; }
-            .log-user { text-align: left; }
-            .item-row { grid-template-columns: 1fr; }
-        }
+        footer { background: #1e293b; color: white; text-align: center; padding: 15px; font-size: 0.85em; flex-shrink: 0; }
+        footer p { margin: 3px 0; }
     </style>
 </head>
 <body>
@@ -194,9 +215,9 @@
         </header>
 
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="switchTab('inspeccion', event)"> Inspección</div>
-            <div class="nav-tab" onclick="switchTab('materiales', event)">📦 Control de Materiales</div>
-            <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla de OTs</div>
+            <div class="nav-tab active" onclick="switchTab('inspeccion', event)">🔍 Inspección</div>
+            <div class="nav-tab" onclick="switchTab('materiales', event)">📦 Materiales</div>
+            <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla OTs</div>
         </div>
 
         <div class="content">
@@ -204,7 +225,7 @@
             <div id="planilla" class="tab-content">
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📁</div>
-                    <div class="upload-text">Cargar Planilla Semanal de Planificación</div>
+                    <div class="upload-text">Cargar Planilla Semanal</div>
                     <div class="upload-hint">Tocá acá o arrastrá tu archivo Excel (.xls / .xlsx)</div>
                     <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
                     <div class="last-update" id="lastUpdate" style="display:none;">
@@ -213,20 +234,18 @@
                 </div>
 
                 <div class="import-summary" id="importSummary" style="display:none;">
-                    <div class="summary-card"><div class="summary-value" id="sumTotal">0</div><div class="summary-label">Total en planilla</div></div>
-                    <div class="summary-card new" style="border-left-color: #10b981;"><div class="summary-value" id="sumNew">0</div><div class="summary-label">🆕 OTs nuevas</div></div>
+                    <div class="summary-card"><div class="summary-value" id="sumTotal">0</div><div class="summary-label">Total</div></div>
+                    <div class="summary-card new" style="border-left-color: #10b981;"><div class="summary-value" id="sumNew">0</div><div class="summary-label">🆕 Nuevas</div></div>
                     <div class="summary-card updated" style="border-left-color: #3b82f6;"><div class="summary-value" id="sumUpdated">0</div><div class="summary-label">🔄 Actualizadas</div></div>
-                    <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">⏭️ Omitidas (cerradas)</div></div>
+                    <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">⏭️ Omitidas</div></div>
                 </div>
 
-                <h2 style="margin-top:30px; color:#1e40af;">📋 Listado de OTs</h2>
+                <h2 style="margin-top:20px; color:#1e40af; font-size:1.2em;">📋 Listado de OTs</h2>
                 <div class="filters">
                     <button class="filter-btn active" onclick="filterTable('todas', event)">Todas <span class="count" id="countTodas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('activas', event)">Activas <span class="count" id="countActivas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('finalizadas', event)">Finalizadas <span class="count" id="countFinalizadas">0</span></button>
-                    <button class="filter-btn" onclick="filterTable('rechazadas', event)">Rechazadas <span class="count" id="countRechazadas">0</span></button>
                     <button class="filter-btn" onclick="filterTable('vencidas', event)" style="border-color:#ef4444;">🔴 Vencidas <span class="count" id="countVencidas">0</span></button>
-                    <button class="filter-btn" onclick="filterTable('nuevas', event)" style="border-color:#10b981;"> Nuevas <span class="count" id="countNuevas">0</span></button>
                 </div>
 
                 <div class="table-container">
@@ -284,26 +303,26 @@
 
                 <div class="form-section">
                     <h2>📎 Repositorio General de Evidencias <span id="repo-ot-number" style="font-size:0.7em; color:#64748b; font-weight:400;"></span></h2>
-                    <p style="color:#64748b; margin-bottom:15px; font-size:0.9em;">Documentos generales de la OT (planos, certificados, fotos generales). Las fotos de cada ítem se adjuntan directamente en la sección de inspección.</p>
+                    <p style="color:#64748b; margin-bottom:12px; font-size:0.85em;">Documentos generales de la OT. Las fotos de cada ítem se adjuntan más abajo.</p>
                     <div class="repo-actions">
-                        <label class="btn btn-primary">
-                             Sacar Foto / Subir Imagen
+                        <label class="btn btn-primary" style="flex:1;">
+                             📷 Foto / Imagen
                             <input type="file" id="input-photo" accept="image/*" capture="environment" hidden onchange="handleFileUpload(this, 'photo')">
                         </label>
-                        <label class="btn btn-secondary">
-                            📄 Subir Documento (Plano, Certificado, PDF)
+                        <label class="btn btn-secondary" style="flex:1;">
+                            📄 Documento
                             <input type="file" id="input-doc" accept=".pdf,.doc,.docx,.jpg,.png" multiple hidden onchange="handleFileUpload(this, 'document')">
                         </label>
                     </div>
                     <div id="repo-file-list" class="repo-list">
-                        <p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT para ver su repositorio.</p>
+                        <p style="color:#64748b; text-align:center; padding:15px; font-size:0.9em;">Seleccioná una OT para ver su repositorio.</p>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h2>🕒 Trazabilidad y Auditoría de la OT</h2>
+                    <h2>🕒 Trazabilidad y Auditoría</h2>
                     <div id="traceability-log" class="traceability-list">
-                        <p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>
+                        <p style="color:#64748b; text-align:center; font-size:0.9em;">Sin registros de auditoría.</p>
                     </div>
                 </div>
 
@@ -313,36 +332,35 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>🔧 Tipos de Inspección a Realizar (tocá para seleccionar)</h2>
+                    <h2>🔧 Tipos de Inspección (tocá para seleccionar)</h2>
                     <div class="type-grid" id="typeGrid"></div>
                 </div>
 
                 <div id="inspectionItems" style="display:none;"></div>
 
                 <div class="progress-container">
-                    <h2 style="color:#1e40af;">📊 Progreso Global de Inspección</h2>
+                    <h2 style="color:#1e40af; font-size:1.1em;">📊 Progreso Global</h2>
                     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%">0%</div></div>
-                    <p id="progressText" style="text-align:center; margin-top:10px; font-weight:600;">0% completado (0 de 0 ítems)</p>
+                    <p id="progressText" style="text-align:center; margin-top:8px; font-weight:600; font-size:0.9em;">0% completado (0 de 0 ítems)</p>
                 </div>
 
                 <div class="signature-container">
-                    <h2 style="color:#1e40af; margin-bottom:10px;">✍️ Firma del Inspector</h2>
-                    <p style="color:#64748b; margin-bottom:10px;">Firmá en el recuadro de abajo con el dedo o el mouse</p>
+                    <h2 style="color:#1e40af; margin-bottom:8px; font-size:1.1em;">✍️ Firma del Inspector</h2>
                     <canvas id="signature-canvas"></canvas>
                     <div class="signature-actions">
-                        <button class="btn btn-secondary" onclick="clearSignature()"> Limpiar</button>
-                        <button class="btn btn-primary" onclick="saveSignature()">💾 Guardar Firma</button>
+                        <button class="btn btn-secondary" style="flex:1;" onclick="clearSignature()">🧹 Limpiar</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="saveSignature()">💾 Guardar</button>
                     </div>
                 </div>
 
                 <div class="action-bar">
-                    <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar Inspección</button>
-                    <button class="btn btn-primary" onclick="generateFormalPDF()">📄 Descargar PDF Profesional</button>
-                    <button class="btn btn-secondary" onclick="generateFormalWord()"> Descargar Word con Imágenes</button>
-                    <button class="btn btn-drive" onclick="uploadToDrive()">☁️ Subir a Drive (Organizado)</button>
-                    <button class="btn btn-drive-offline" onclick="exportOTToZip()">📦 Empaquetar ZIP (Manual)</button>
-                    <button class="btn btn-info" onclick="prepareEmail()">📧 Enviar Email Automático</button>
-                    <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar Todo</button>
+                    <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar</button>
+                    <button class="btn btn-primary" onclick="generateFormalPDF()">📄 PDF</button>
+                    <button class="btn btn-secondary" onclick="generateFormalWord()">📝 Word</button>
+                    <button class="btn btn-drive" onclick="uploadToDrive()">☁️ Drive</button>
+                    <button class="btn btn-drive-offline" onclick="exportOTToZip()">📦 ZIP</button>
+                    <button class="btn btn-info" onclick="prepareEmail()">📧 Email</button>
+                    <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar</button>
                 </div>
             </div>
 
@@ -359,8 +377,8 @@
                         </div>
                         <div class="form-group"><label>Cliente</label><input type="text" id="matCliente" readonly></div>
                         <div class="form-group"><label>Fecha de Recepción</label><input type="date" id="matFecha"></div>
-                        <div class="form-group"><label>Responsable de Recepción</label><input type="text" id="matResponsable" placeholder="Nombre del responsable"></div>
-                        <div class="form-group full-width"><label>Descripción del Material</label><textarea id="matDescripcion" rows="2" placeholder="Descripción detallada del material recibido..."></textarea></div>
+                        <div class="form-group"><label>Responsable</label><input type="text" id="matResponsable" placeholder="Nombre del responsable"></div>
+                        <div class="form-group full-width"><label>Descripción del Material</label><textarea id="matDescripcion" rows="2" placeholder="Descripción detallada..."></textarea></div>
                         <div class="form-group"><label>Cantidad</label><input type="number" id="matCantidad" placeholder="0"></div>
                         <div class="form-group"><label>Unidad</label><select id="matUnidad"><option value="">Seleccionar...</option><option>Unidades</option><option>Kg</option><option>Metros</option><option>Juego</option></select></div>
                         <div class="form-group"><label>Proveedor</label><input type="text" id="matProveedor" placeholder="Nombre del proveedor"></div>
@@ -372,53 +390,53 @@
                     <h2>✅ Verificaciones de Material</h2>
                     <div id="materialChecks">
                         <div class="item-row">
-                            <div><span style="font-weight:600;">Certificado de Calidad</span></div>
-                            <select id="matCheck1" class="mat-check-select">
+                            <div><span style="font-weight:600; font-size:0.9em;">Certificado de Calidad</span></div>
+                            <select id="matCheck1" class="mat-check-select" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
                                 <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
-                            <input type="text" placeholder="Observación" id="matCheck1Obs">
+                            <input type="text" placeholder="Observación" id="matCheck1Obs" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                             <label class="item-photo-btn">
                                 📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 1)">
                             </label>
                         </div>
                         <div class="item-row">
-                            <div><span style="font-weight:600;">Inspección Visual</span></div>
-                            <select id="matCheck2" class="mat-check-select">
+                            <div><span style="font-weight:600; font-size:0.9em;">Inspección Visual</span></div>
+                            <select id="matCheck2" class="mat-check-select" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
                                 <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
-                            <input type="text" placeholder="Observación" id="matCheck2Obs">
+                            <input type="text" placeholder="Observación" id="matCheck2Obs" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                             <label class="item-photo-btn">
                                 📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 2)">
                             </label>
                         </div>
                         <div class="item-row">
-                            <div><span style="font-weight:600;">Medidas/Dimensiones</span></div>
-                            <select id="matCheck3" class="mat-check-select">
+                            <div><span style="font-weight:600; font-size:0.9em;">Medidas/Dimensiones</span></div>
+                            <select id="matCheck3" class="mat-check-select" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
                                 <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
-                            <input type="text" placeholder="Observación" id="matCheck3Obs">
+                            <input type="text" placeholder="Observación" id="matCheck3Obs" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                             <label class="item-photo-btn">
                                 📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 3)">
                             </label>
                         </div>
                         <div class="item-row">
-                            <div><span style="font-weight:600;">Documentación Adjunta</span></div>
-                            <select id="matCheck4" class="mat-check-select">
+                            <div><span style="font-weight:600; font-size:0.9em;">Documentación Adjunta</span></div>
+                            <select id="matCheck4" class="mat-check-select" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                                 <option value="">Sin evaluar</option>
                                 <option value="ok">✅ Conforme</option>
                                 <option value="nc">❌ No Conforme</option>
                                 <option value="na">➖ No Aplica</option>
                             </select>
-                            <input type="text" placeholder="Observación" id="matCheck4Obs">
+                            <input type="text" placeholder="Observación" id="matCheck4Obs" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                             <label class="item-photo-btn">
                                 📷<input type="file" accept="image/*" capture="environment" hidden onchange="handleMaterialPhoto(this, 4)">
                             </label>
@@ -427,16 +445,16 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>️ Firma del Responsable</h2>
-                    <canvas id="materialSignatureCanvas" style="width:100%; height:200px; border:2px solid #cbd5e1; border-radius:8px; background:white;"></canvas>
+                    <h2>✍️ Firma del Responsable</h2>
+                    <canvas id="materialSignatureCanvas"></canvas>
                     <div class="signature-actions">
-                        <button class="btn btn-secondary" onclick="clearMaterialSignature()">🧹 Limpiar</button>
-                        <button class="btn btn-primary" onclick="saveMaterialSignature()">💾 Guardar Firma</button>
+                        <button class="btn btn-secondary" style="flex:1;" onclick="clearMaterialSignature()">🧹 Limpiar</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="saveMaterialSignature()">💾 Guardar</button>
                     </div>
                 </div>
 
                 <div class="action-bar">
-                    <button class="btn btn-success" onclick="saveMaterialControl()">💾 Guardar Control de Material</button>
+                    <button class="btn btn-success" onclick="saveMaterialControl()">💾 Guardar Control</button>
                     <button class="btn btn-primary" onclick="generateMaterialPDF()">📄 Generar PDF</button>
                     <button class="btn btn-warning" onclick="resetMaterialForm()">🔄 Reiniciar</button>
                 </div>
@@ -456,9 +474,6 @@
         // ============================================
         const INMETAL_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
         
-        // Nota: Reemplazá esta cadena con el base64 real de tu logo INMETAL
-        // Podés convertir tu imagen en: https://www.base64-image.de/
-
         // ============================================
         // CONFIGURACIÓN DE GOOGLE DRIVE
         // ============================================
@@ -622,7 +637,7 @@
             { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '🔩' },
             { id: 'soldadura', label: 'Soldadura', icon: '🔥' }, { id: 'pmi', label: 'PMI / Documental', icon: '📄' },
             { id: 'caldereria', label: 'Calderería', icon: '🛠️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
-            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '' },
+            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '🎨' },
             { id: 'recepcion_mp', label: 'Recepción de MP', icon: '📦' }, { id: 'dimensional_final', label: 'Dimensional Final', icon: '✅' }
         ];
 
@@ -735,33 +750,29 @@
 
         async function uploadToDrive() {
             const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('️ Seleccioná una OT primero', 'warning');
+            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
             if (!driveConnected) {
                 if (confirm('No estás conectado a Google Drive. ¿Querés conectarte ahora?')) connectToDrive();
-                else showToast('💡 Usá el botón " Empaquetar ZIP" como alternativa', 'info');
+                else showToast('💡 Usá el botón "Empaquetar ZIP" como alternativa', 'info');
                 return;
             }
             try {
-                showToast('☁️ Subiendo archivos a Drive (organizado en carpetas)...', 'info');
+                showToast('☁️ Subiendo archivos a Drive...', 'info');
                 const otData = otsData.find(o => o.ot === ot) || {};
                 const otFolderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
                 
-                // Crear carpeta raíz de la OT
                 const otFolder = await createFolderInDrive(otFolderName, GOOGLE_DRIVE_CONFIG.FOLDER_ID);
                 const otFolderId = otFolder.id;
 
-                // Crear subcarpetas organizadas
                 const imagenesFolder = await createFolderInDrive('01_Imágenes', otFolderId);
                 const informesFolder = await createFolderInDrive('02_Informes', otFolderId);
                 const pdfFolder = await createFolderInDrive('03_PDF', otFolderId);
                 const certificadosFolder = await createFolderInDrive('04_Certificados', otFolderId);
                 const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolderId);
 
-                // Subir archivo de información
                 const infoText = `ORDEN DE TRABAJO: ${ot}\nCLIENTE: ${otData.cliente || 'N/A'}\nDESCRIPCIÓN: ${otData.descripcion || 'N/A'}\nRESPONSABLE: ${otData.responsable || 'N/A'}\nSECTOR: ${otData.sector || 'N/A'}\nESTADO: ${otData.estadoManual || 'N/A'}\nFECHA: ${new Date().toLocaleString('es-AR')}`;
                 await uploadFileToDrive('00_INFO_OT.txt', infoText, 'text/plain', otFolderId);
 
-                // Subir archivos adjuntos del repositorio organizados por tipo
                 const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
                 for (const file of attachments) {
                     const base64Data = file.data.split(',')[1];
@@ -770,7 +781,6 @@
                     for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
                     const byteArray = new Uint8Array(byteNumbers);
                     
-                    // Determinar carpeta según tipo de archivo
                     let targetFolderId = otFolderId;
                     if (file.type === 'photo' || file.mimeType.startsWith('image/')) {
                         targetFolderId = imagenesFolder.id;
@@ -785,11 +795,11 @@
                     await uploadFileToDrive(file.name, byteArray, file.mimeType, targetFolderId);
                 }
 
-                await addTraceabilityLog(ot, 'SUBIDA_DRIVE', `Archivos subidos a Google Drive en carpeta organizada: ${otFolderName}`);
-                showToast(`✅ Archivos subidos a Drive organizados en: ${otFolderName}`, 'success');
+                await addTraceabilityLog(ot, 'SUBIDA_DRIVE', `Archivos subidos a Drive: ${otFolderName}`);
+                showToast(`✅ Archivos subidos a Drive`, 'success');
             } catch (err) {
                 console.error(err);
-                showToast('❌ Error al subir a Drive: ' + err.message + '. Usá el modo ZIP.', 'error');
+                showToast('❌ Error al subir a Drive: ' + err.message, 'error');
             }
         }
 
@@ -922,7 +932,7 @@
                     renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showImportSummary(stats);
                     document.getElementById('lastUpdate').style.display = 'block';
                     document.getElementById('lastUpdateDate').textContent = importDate;
-                    showToast(`✅ Importación: ${stats.new} nuevas, ${stats.updated} actualizadas, ${stats.skipped} omitidas`, 'success');
+                    showToast(`✅ Importación: ${stats.new} nuevas, ${stats.updated} actualizadas`, 'success');
                 } catch (err) { showToast('❌ Error al leer el archivo: ' + err.message, 'error'); }
             };
             reader.readAsArrayBuffer(file);
@@ -941,9 +951,7 @@
             let filteredData = otsData;
             if (currentFilter === 'activas') filteredData = otsData.filter(o => o.estadoManual === 'activa');
             else if (currentFilter === 'finalizadas') filteredData = otsData.filter(o => o.estadoManual === 'finalizada');
-            else if (currentFilter === 'rechazadas') filteredData = otsData.filter(o => o.estadoManual === 'rechazada');
             else if (currentFilter === 'vencidas') filteredData = otsData.filter(o => { const d = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega); return d !== null && d < 0 && o.estadoManual === 'activa'; });
-            else if (currentFilter === 'nuevas') filteredData = otsData.filter(o => o.esNueva === true);
             
             if (filteredData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:30px; color:#64748b;">No hay OTs para mostrar</td></tr>'; return; }
             
@@ -968,7 +976,7 @@
                     <td><span class="semaforo ${semaforoClass} dias-restantes">${daysText}</span></td>
                     <td class="${horasClass}">${horasText}</td>
                     <td><span class="status-badge status-${ot.estadoManual}">${ot.estadoManual}</span></td>
-                    <td>${ot.estadoManual === 'activa' ? `<button class="action-btn btn-select" onclick="selectOT('${ot.ot}')"></button><button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅</button><button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌</button>` : '<span style="color:#64748b; font-size:0.8em;">Cerrada</span>'}</td>
+                    <td>${ot.estadoManual === 'activa' ? `<button class="action-btn btn-select" onclick="selectOT('${ot.ot}')">🔍</button><button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅</button><button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌</button>` : '<span style="color:#64748b; font-size:0.8em;">Cerrada</span>'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -985,9 +993,7 @@
             document.getElementById('countTodas').textContent = otsData.length;
             document.getElementById('countActivas').textContent = otsData.filter(o => o.estadoManual === 'activa').length;
             document.getElementById('countFinalizadas').textContent = otsData.filter(o => o.estadoManual === 'finalizada').length;
-            document.getElementById('countRechazadas').textContent = otsData.filter(o => o.estadoManual === 'rechazada').length;
             document.getElementById('countVencidas').textContent = otsData.filter(o => { const d = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega); return d !== null && d < 0 && o.estadoManual === 'activa'; }).length;
-            document.getElementById('countNuevas').textContent = otsData.filter(o => o.esNueva === true).length;
         }
 
         function selectOT(otNumber) {
@@ -1006,17 +1012,17 @@
             if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
         }
         function clearAllData() {
-            if (confirm('¿Borrar TODAS las OTs?') && confirm('️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
+            if (confirm('¿Borrar TODAS las OTs?') && confirm('⚠️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
                 otsData = []; localStorage.removeItem('inmetal_ots_v40'); localStorage.removeItem('inmetal_last_import_v40');
                 lastImportStats = null; document.getElementById('importSummary').style.display = 'none'; document.getElementById('lastUpdate').style.display = 'none';
-                renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('️ Datos borrados', 'info');
+                renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
             }
         }
         function exportData() {
             const exportRows = otsData.map(ot => ({ 'OT': ot.ot, 'Cliente': ot.cliente, 'Descripción': ot.descripcion, 'Sector': ot.sector, 'Responsable': ot.responsable, 'Estado': ot.estadoManual, 'Días': ot.dias }));
             const ws = XLSX.utils.json_to_sheet(exportRows); const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'OTs'); XLSX.writeFile(wb, `OTs_INMETAL_${new Date().toISOString().split('T')[0]}.xlsx`);
-            showToast(' Datos exportados', 'success');
+            showToast('📤 Datos exportados', 'success');
         }
 
         function updateOTSelect() {
@@ -1056,8 +1062,8 @@
             } else {
                 ['cliente','operario','sectorExcel','estadoExcel','descripcion'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('repo-ot-number').textContent = '';
-                document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT para ver su repositorio.</p>';
-                document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>';
+                document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:15px; font-size:0.9em;">Seleccioná una OT para ver su repositorio.</p>';
+                document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center; font-size:0.9em;">Sin registros de auditoría.</p>';
             }
         }
         
@@ -1083,8 +1089,8 @@
                     const fileData = { id: Date.now() + Math.random().toString(36).substr(2, 9), name: file.name, type: type, mimeType: file.type, size: file.size, data: e.target.result, date: new Date().toISOString(), user: inspectorName };
                     const key = `OT_${ot}_attachments`; let attachments = await localforage.getItem(key) || [];
                     attachments.push(fileData); await localforage.setItem(key, attachments);
-                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : ' Documento'}: ${file.name}`);
-                    await renderRepository(ot); showToast(`✅ ${file.name} guardado en el repositorio`, 'success');
+                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : '📄 Documento'}: ${file.name}`);
+                    await renderRepository(ot); showToast(`✅ ${file.name} guardado`, 'success');
                 };
                 reader.readAsDataURL(file);
             }
@@ -1095,7 +1101,7 @@
             const list = document.getElementById('repo-file-list'); const logList = document.getElementById('traceability-log');
             const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
             const logs = await localforage.getItem(`OT_${ot}_logs`) || [];
-            if (attachments.length === 0) { list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px; background:white; border-radius:8px; border:1px dashed #cbd5e1;">No hay archivos adjuntos para esta OT.</p>'; } 
+            if (attachments.length === 0) { list.innerHTML = '<p style="color:#64748b; text-align:center; padding:15px; font-size:0.9em; background:white; border-radius:8px; border:1px dashed #cbd5e1;">No hay archivos adjuntos.</p>'; } 
             else {
                 list.innerHTML = attachments.map((file) => `
                     <div class="repo-item">
@@ -1108,10 +1114,10 @@
                     </div>
                 `).join('');
             }
-            if (logs.length === 0) { logList.innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>'; } 
+            if (logs.length === 0) { logList.innerHTML = '<p style="color:#64748b; text-align:center; font-size:0.9em;">Sin registros de auditoría.</p>'; } 
             else {
                 logList.innerHTML = logs.slice().reverse().map(log => `
-                    <div class="log-item"><span class="log-time">${new Date(log.date).toLocaleString('es-AR')}</span><span class="log-action">${log.action}</span><span class="log-detail">${log.detail}</span><span class="log-user"> ${log.user}</span></div>
+                    <div class="log-item"><span class="log-time">${new Date(log.date).toLocaleString('es-AR')}</span><span class="log-action">${log.action}</span><span class="log-detail">${log.detail}</span><span class="log-user">👤 ${log.user}</span></div>
                 `).join('');
             }
         }
@@ -1185,15 +1191,15 @@
                     const photoCount = itemData.photos ? itemData.photos.length : 0;
                     return `
                     <div class="item-row">
-                        <div><span style="font-weight:600;">${item}</span>
-                            ${photoCount > 0 ? `<div class="item-photos-preview">${itemData.photos.slice(0, 3).map(p => `<img src="${p.data}" class="item-photo-thumb" onclick="viewItemPhoto('${p.data}')" title="${p.name}" />`).join('')}${photoCount > 3 ? `<span style="font-size:0.8em; color:#64748b;">+${photoCount - 3} más</span>` : ''}</div>` : ''}
+                        <div><span style="font-weight:600; font-size:0.9em;">${item}</span>
+                            ${photoCount > 0 ? `<div class="item-photos-preview">${itemData.photos.slice(0, 3).map(p => `<img src="${p.data}" class="item-photo-thumb" onclick="viewItemPhoto('${p.data}')" title="${p.name}" />`).join('')}${photoCount > 3 ? `<span style="font-size:0.75em; color:#64748b;">+${photoCount - 3} más</span>` : ''}</div>` : ''}
                         </div>
-                        <select onchange="updateItem('${typeId}', ${idx}, 'status', this.value)">
+                        <select onchange="updateItem('${typeId}', ${idx}, 'status', this.value)" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
                             <option value="">Sin evaluar</option><option value="ok" ${itemData.status === 'ok' ? 'selected' : ''}>✅ Conforme</option><option value="nc" ${itemData.status === 'nc' ? 'selected' : ''}>❌ No Conforme</option><option value="obs" ${itemData.status === 'obs' ? 'selected' : ''}>⚠️ Observación</option><option value="na" ${itemData.status === 'na' ? 'selected' : ''}>➖ No Aplica</option>
                         </select>
-                        <input type="text" placeholder="Valor" value="${itemData.value || ''}" onchange="updateItem('${typeId}', ${idx}, 'value', this.value)">
-                        <input type="text" placeholder="Observación" value="${itemData.obs || ''}" onchange="updateItem('${typeId}', ${idx}, 'obs', this.value)">
-                        <label class="item-photo-btn ${photoCount > 0 ? 'has-photos' : ''}" title="Adjuntar foto a este ítem">
+                        <input type="text" placeholder="Valor" value="${itemData.value || ''}" onchange="updateItem('${typeId}', ${idx}, 'value', this.value)" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
+                        <input type="text" placeholder="Observación" value="${itemData.obs || ''}" onchange="updateItem('${typeId}', ${idx}, 'obs', this.value)" style="padding:8px; border-radius:6px; border:2px solid #e2e8f0;">
+                        <label class="item-photo-btn ${photoCount > 0 ? 'has-photos' : ''}" title="Adjuntar foto">
                             📷${photoCount > 0 ? `<span class="item-photo-count">${photoCount}</span>` : ''}
                             <input type="file" accept="image/*" capture="environment" hidden onchange="handleItemPhotoUpload('${typeId}', ${idx}, this)">
                         </label>
@@ -1243,7 +1249,7 @@
             const ot = document.getElementById('otSelect').value; const etapa = document.getElementById('etapa').value;
             if (!ot) return showToast('Seleccioná una OT', 'warning');
             if (!etapa) return showToast('Seleccioná una etapa', 'warning');
-            if (selectedTypes.size === 0) return showToast('Seleccioná al menos un tipo de inspección', 'warning');
+            if (selectedTypes.size === 0) return showToast('Seleccioná al menos un tipo', 'warning');
             let ncs = 0, obs = 0;
             Object.values(inspectionItems).forEach(items => { items.forEach(item => { if (item.status === 'nc') ncs++; if (item.status === 'obs') obs++; }); });
             let msg = ncs > 0 ? `❌ NO CONFORME — ${ncs} no conformidad(es)` : obs > 0 ? `⚠️ CONFORME con ${obs} observación(es)` : '✅ CONFORME';
@@ -1263,7 +1269,6 @@
             const margin = 15;
             let y = 15;
 
-            // ENCABEZADO CON LOGO
             try {
                 doc.addImage(INMETAL_LOGO_BASE64, 'PNG', margin, y, 50, 20);
             } catch (e) {
@@ -1289,14 +1294,12 @@
             doc.line(margin, y, pageWidth - margin, y);
             y += 5;
             
-            // TÍTULO DEL DOCUMENTO
             doc.setTextColor(30, 41, 59);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
             doc.text('INFORME DE INSPECCIÓN DE CALIDAD', pageWidth / 2, y, { align: 'center' });
             y += 8;
             
-            // Número de documento
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(100);
@@ -1304,7 +1307,6 @@
             doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, y + 5, { align: 'right' });
             y += 10;
             
-            // INTRODUCCIÓN
             doc.setFillColor(241, 245, 249);
             doc.rect(margin, y - 3, pageWidth - 2 * margin, 18, 'F');
             doc.setTextColor(80, 80, 80);
@@ -1320,7 +1322,6 @@
             });
             y += 5;
             
-            // SECCIÓN 1: DATOS DE TRAZABILIDAD
             doc.setTextColor(30, 64, 175);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
@@ -1349,7 +1350,6 @@
             });
             y = doc.lastAutoTable.finalY + 10;
             
-            // SECCIÓN 2: RESULTADOS DE INSPECCIÓN
             doc.setTextColor(30, 64, 175);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
@@ -1371,7 +1371,7 @@
             if (tableData.length > 0) {
                 doc.autoTable({
                     startY: y,
-                    head: [['Tipo de Inspección', 'Ítem Evaluado', 'Estado', 'Valor Medido', 'Observaciones']],
+                    head: [['Tipo', 'Ítem', 'Estado', 'Valor', 'Observaciones']],
                     body: tableData,
                     margin: { left: margin, right: margin },
                     theme: 'striped',
@@ -1388,11 +1388,10 @@
                 y = doc.lastAutoTable.finalY + 10;
             }
             
-            // SECCIÓN 3: EVIDENCIAS FOTOGRÁFICAS (IMÁGENES PEQUEÑAS)
             doc.setTextColor(30, 64, 175);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('3. EVIDENCIAS FOTOGRÁFICAS POR ÍTEM', margin, y);
+            doc.text('3. EVIDENCIAS FOTOGRÁFICAS', margin, y);
             y += 8;
             
             let hasItemPhotos = false;
@@ -1410,7 +1409,6 @@
                         doc.text(`${type.label} - ${items[idx]}`, margin, y);
                         y += 5;
                         
-                        // Mostrar imágenes en grid pequeño (3 por fila)
                         let col = 0;
                         item.photos.forEach((photo) => {
                             if (col === 0 && y > 250) { doc.addPage(); y = 20; }
@@ -1437,11 +1435,10 @@
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(100);
-                doc.text('No se adjuntaron evidencias fotográficas a los ítems evaluados.', margin, y);
+                doc.text('No se adjuntaron evidencias fotográficas.', margin, y);
                 y += 10;
             }
             
-            // SECCIÓN 4: FIRMA
             if (y > 220) { doc.addPage(); y = 20; }
             
             doc.setFillColor(241, 245, 249);
@@ -1471,7 +1468,6 @@
             doc.text(`Inspector: ${document.getElementById('inspector').value || '_______________________'}`, margin, y + 35);
             doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, margin, y + 40);
             
-            // PIE DE PÁGINA
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -1487,11 +1483,11 @@
             }
             
             doc.save(`INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
-            showToast('📄 PDF Profesional generado con logo e imágenes pequeñas', 'success');
+            showToast('📄 PDF Profesional generado', 'success');
         }
 
         // ============================================
-        // GENERACIÓN DE WORD PROFESIONAL CON LOGO E IMÁGENES PEQUEÑAS
+        // GENERACIÓN DE WORD PROFESIONAL
         // ============================================
         async function generateFormalWord() {
             const ot = document.getElementById('otSelect').value;
@@ -1501,7 +1497,6 @@
             const inspector = document.getElementById('inspector').value || 'No especificado';
             const otData = otsData.find(o => o.ot === ot) || {};
             
-            // Construir tabla de resultados con imágenes pequeñas
             let itemsHtml = '';
             Object.keys(inspectionItems).forEach(typeId => {
                 const type = inspectionTypes.find(t => t.id === typeId);
@@ -1512,7 +1507,7 @@
                 
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
-                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
+                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
                         const photoCount = item.photos ? item.photos.length : 0;
                         let photosHtml = photoCount > 0 ? `📷 ${photoCount} imagen(es)` : '—';
                         
@@ -1524,10 +1519,8 @@
                             <td style="border:1px solid #ddd; padding:5px;">${photosHtml}</td>
                         </tr>`;
                         
-                        // Agregar imágenes pequeñas inline si existen (máximo 100px)
                         if (item.photos && item.photos.length > 0) {
-                            itemsHtml += `<tr><td colspan="5" style="padding:8px; background:#f8fafc;">`;
-                            itemsHtml += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+                            itemsHtml += `<tr><td colspan="5" style="padding:8px; background:#f8fafc;"><div style="display:flex; flex-wrap:wrap; gap:8px;">`;
                             item.photos.forEach(photo => {
                                 itemsHtml += `<img src="${photo.data}" style="width:100px; height:75px; object-fit:cover; border:1px solid #ddd; border-radius:3px;" />`;
                             });
@@ -1567,17 +1560,14 @@
                         <p>Departamento de Calidad — ISO 9001:2015</p>
                         <p style="font-size:14pt; margin-top:10px; font-weight:bold;">INFORME DE INSPECCIÓN DE CALIDAD</p>
                     </div>
-                    
                     <div class="doc-info">
                         <strong>Documento N°:</strong> INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}<br>
                         <strong>Fecha de Emisión:</strong> ${fecha}<br>
                         <strong>OT:</strong> ${ot}
                     </div>
-                    
                     <div class="intro">
-                        El presente documento certifica los resultados de la inspección de calidad realizada conforme a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015. Este informe es un documento oficial que forma parte del registro de calidad de la organización.
+                        El presente documento certifica los resultados de la inspección de calidad realizada conforme a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.
                     </div>
-                    
                     <div class="section">
                         <h2>1. DATOS DE TRAZABILIDAD</h2>
                         <table style="width:100%; border-collapse:collapse; font-size:9pt;">
@@ -1591,23 +1581,19 @@
                             <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Descripción del Trabajo</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('descripcion').value || '—'}</td></tr>
                         </table>
                     </div>
-                    
                     <div class="section">
                         <h2>2. RESULTADOS DE INSPECCIÓN</h2>
                         ${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}
                     </div>
-                    
                     <div class="signature">
                         <h2>3. FIRMA Y CERTIFICACIÓN</h2>
                         <p><strong>Inspector de Calidad:</strong> ${inspector}</p>
                         <p><strong>Fecha:</strong> ${fecha}</p>
                         ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:200px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}
                     </div>
-                    
                     <div class="footer">
                         <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
                         <p>Departamento de Calidad — ISO 9001:2015 — Documento Controlado</p>
-                        <p>Este documento es propiedad de INMETAL y su contenido es confidencial</p>
                     </div>
                 </body>
                 </html>
@@ -1620,11 +1606,11 @@
             a.download = `INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.doc`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('📝 Word Profesional generado con logo e imágenes pequeñas', 'success');
+            showToast('📝 Word Profesional generado', 'success');
         }
 
         // ============================================
-        // EMAIL AUTOMÁTICO CON CORREOS SELECCIONADOS
+        // EMAIL AUTOMÁTICO
         // ============================================
         function prepareEmail() {
             const ot = document.getElementById('otSelect').value;
@@ -1647,19 +1633,15 @@
 
 Por medio del presente se remite el informe de inspección de calidad correspondiente a la Orden de Trabajo N° ${ot}.
 
- DATOS DEL INFORME:
+DATOS DEL INFORME:
 • OT: ${ot}
 • Cliente: ${otData.cliente || '—'}
 • Inspector: ${inspector}
 • Fecha: ${new Date().toLocaleDateString('es-AR')}
-• Estado: ${document.getElementById('estadoExcel').value || '—'}
 
 📎 DOCUMENTOS ADJUNTOS:
 • Informe de Inspección en formato PDF
-• Informe en formato Word (con imágenes)
 • Evidencias fotográficas y documentación técnica
-
-El informe completo se encuentra disponible en Google Drive y/o adjunto a este correo.
 
 Quedamos a disposición para cualquier consulta.
 
@@ -1686,7 +1668,7 @@ Destinatarios: ${selectedNames.join(', ')}
         async function exportOTToZip() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
-            showToast(' Empaquetando archivos...', 'info');
+            showToast('📦 Empaquetando archivos...', 'info');
             try {
                 const zip = new JSZip(); const otFolder = zip.folder(`OT_${ot}`);
                 const otData = otsData.find(o => o.ot === ot) || {};
@@ -1759,30 +1741,23 @@ Destinatarios: ${selectedNames.join(', ')}
                 fechaRegistro: new Date().toISOString()
             };
             
-            // Guardar en IndexedDB
             const controls = await localforage.getItem('material_controls') || [];
             controls.push(materialData);
             await localforage.setItem('material_controls', controls);
             
-            // Subir a Drive si está conectado
             if (driveConnected) {
                 try {
                     showToast('☁️ Subiendo control de material a Drive...', 'info');
                     const otData = otsData.find(o => o.ot === ot) || {};
                     const otFolderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
                     
-                    // Buscar o crear carpeta de la OT
                     const otFolder = await createFolderInDrive(otFolderName, GOOGLE_DRIVE_CONFIG.FOLDER_ID);
                     const otFolderId = otFolder.id;
-                    
-                    // Crear subcarpeta de controles de materiales
                     const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolderId);
                     
-                    // Subir archivo de control
-                    const controlText = `CONTROL DE INGRESO DE MATERIALES\nOT: ${ot}\nFecha: ${materialData.fecha}\nResponsable: ${materialData.responsable}\nMaterial: ${materialData.descripcion}\nCantidad: ${materialData.cantidad} ${materialData.unidad}\nProveedor: ${materialData.proveedor}\nCertificado: ${materialData.certificado}\n\nVERIFICACIONES:\n1. Certificado: ${materialData.verificaciones.certificado.estado} - ${materialData.verificaciones.certificado.obs}\n2. Visual: ${materialData.verificaciones.visual.estado} - ${materialData.verificaciones.visual.obs}\n3. Medidas: ${materialData.verificaciones.medidas.estado} - ${materialData.verificaciones.medidas.obs}\n4. Documentación: ${materialData.verificaciones.documentacion.estado} - ${materialData.verificaciones.documentacion.obs}`;
+                    const controlText = `CONTROL DE INGRESO DE MATERIALES\nOT: ${ot}\nFecha: ${materialData.fecha}\nResponsable: ${materialData.responsable}\nMaterial: ${materialData.descripcion}\nCantidad: ${materialData.cantidad} ${materialData.unidad}\nProveedor: ${materialData.proveedor}\nCertificado: ${materialData.certificado}`;
                     await uploadFileToDrive(`Control_Material_OT${ot}_${new Date().toISOString().split('T')[0]}.txt`, controlText, 'text/plain', controlesFolder.id);
                     
-                    // Subir fotos
                     for (const [checkNum, photo] of Object.entries(materialPhotos)) {
                         const base64Data = photo.data.split(',')[1];
                         const byteCharacters = atob(base64Data);
@@ -1806,7 +1781,7 @@ Destinatarios: ${selectedNames.join(', ')}
         function generateMaterialPDF() {
             const ot = document.getElementById('matOtSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
-            showToast(' Generando PDF de control de material...', 'info');
+            showToast('📄 Generando PDF de control de material...', 'info');
             // Implementación similar a generateFormalPDF pero para materiales
         }
         
@@ -1835,8 +1810,8 @@ Destinatarios: ${selectedNames.join(', ')}
             document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
             document.getElementById('inspectionItems').innerHTML = ''; document.getElementById('inspectionItems').style.display = 'none';
             signaturePad.clear(); updateProgress();
-            document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT.</p>';
-            document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros.</p>';
+            document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:15px; font-size:0.9em;">Seleccioná una OT.</p>';
+            document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center; font-size:0.9em;">Sin registros.</p>';
             document.getElementById('repo-ot-number').textContent = '';
             showToast('🔄 Formulario reiniciado', 'info');
         }
