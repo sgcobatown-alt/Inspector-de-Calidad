@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspector de Calidad - OBATOWN v3.3</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 25px; text-align: center; }
+        header h1 { font-size: 2.5em; margin-bottom: 5px; }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        .version-badge { display: inline-block; background: #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8em; margin-left: 10px; }
+        .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; }
+        .nav-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .nav-tab:hover { background: #e2e8f0; }
+        .nav-tab.active { background: white; color: #1e40af; border-bottom: 3px solid #1e40af; }
+        .content { padding: 30px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Resumen de importación */
+        .import-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
+        .summary-card { background: white; border-radius: 10px; padding: 15px; border-left: 4px solid #1e40af; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .summary-card.new { border-left-color: #10b981; }
+        .summary-card.updated { border-left-color: #3b82f6; }
+        .summary-card.skipped { border-left-color: #64748b; }
+        .summary-card.total { border-left-color: #8b5cf6; }
+        .summary-value { font-size: 2em; font-weight: 700; color: #1e293b; }
+        .summary-label { color: #64748b; font-size: 0.9em; margin-top: 5px; }
+        
+        /* Upload Zone */
+        .upload-zone { border: 3px dashed #1e40af; border-radius: 15px; padding: 50px; text-align: center; background: #eff6ff; cursor: pointer; transition: all 0.3s; }
+        .upload-zone:hover { background: #dbeafe; border-color: #3b82f6; }
+        .upload-zone.dragover { background: #bfdbfe; border-color: #2563eb; }
+        .upload-icon { font-size: 4em; margin-bottom: 15px; }
+        .upload-text { font-size: 1.2em; color: #1e40af; font-weight: 600; }
+        .upload-hint { color: #64748b; margin-top: 10px; font-size: 0.9em; }
+        .last-update { background: #f0fdf4; border: 1px solid #86efac; padding: 10px; border-radius: 8px; margin-top: 15px; color: #166534; font-size: 0.9em; }
+        
+        /* Filters */
+        .filters { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 16px; border: 2px solid #e2e8f0; background: white; border-radius: 20px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .filter-btn:hover { border-color: #1e40af; }
+        .filter-btn.active { background: #1e40af; color: white; border-color: #1e40af; }
+        .filter-btn .count { background: rgba(0,0,0,0.1); padding: 2px 8px; border-radius: 10px; margin-left: 5px; font-size: 0.85em; }
+        .filter-btn.active .count { background: rgba(255,255,255,0.3); }
+        
+        /* Table */
+        .table-container { overflow-x: auto; margin-top: 20px; max-height: 600px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        thead { position: sticky; top: 0; z-index: 10; }
+        th { background: #1e40af; color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 0.85em; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9em; }
+        tr:hover { background: #f8fafc; }
+        tr.row-new { background: #f0fdf4; }
+        tr.row-new td:first-child::before { content: '🆕 '; }
+        tr.row-closed { opacity: 0.6; background: #f1f5f9; }
+        .status-badge { padding: 5px 12px; border-radius: 15px; font-size: 0.8em; font-weight: 600; display: inline-block; white-space: nowrap; }
+        .status-activa { background: #d1fae5; color: #065f46; }
+        .status-finalizada { background: #dbeafe; color: #1e40af; }
+        .status-rechazada { background: #fee2e2; color: #991b1b; }
+        .status-detenido { background: #fef3c7; color: #92400e; }
+        .status-espera { background: #e0e7ff; color: #3730a3; }
+        .status-proceso { background: #fef3c7; color: #92400e; }
+        .action-btn { padding: 5px 10px; margin: 2px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 600; }
+        .btn-select { background: #10b981; color: white; }
+        .btn-finish { background: #3b82f6; color: white; }
+        .btn-reject { background: #ef4444; color: white; }
+        
+        /* SEMÁFORO */
+        .semaforo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; white-space: nowrap; }
+        .semaforo-verde { background: #d1fae5; color: #065f46; }
+        .semaforo-amarillo { background: #fef3c7; color: #92400e; }
+        .semaforo-rojo { background: #fee2e2; color: #991b1b; }
+        .semaforo-azul { background: #dbeafe; color: #1e40af; }
+        .semaforo-gris { background: #f1f5f9; color: #64748b; }
+        .fecha-cell { font-size: 0.85em; white-space: nowrap; }
+        .dias-restantes { font-weight: 700; }
+        .ot-number { font-weight: 700; color: #1e40af; font-family: 'Courier New', monospace; }
+        .cliente-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .desc-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .horas-cell { font-family: 'Courier New', monospace; font-size: 0.85em; }
+        .horas-excedidas { color: #ef4444; font-weight: 700; }
+        .estado-excel { font-size: 0.8em; padding: 3px 8px; border-radius: 10px; background: #f1f5f9; }
+        
+        /* Form */
+        .form-section { background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .form-section h2 { color: #1e40af; margin-bottom: 15px; font-size: 1.3em; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; color: #334155; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1em; transition: border 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1e40af; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; padding: 10px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .checkbox-item:hover { border-color: #1e40af; }
+        .checkbox-item input { width: 18px; height: 18px; cursor: pointer; }
+        
+        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px; }
+        .type-chip { padding: 12px; background: white; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 600; }
+        .type-chip:hover { border-color: #1e40af; transform: translateY(-2px); }
+        .type-chip.selected { background: #10b981; color: white; border-color: #10b981; }
+        
+        .progress-container { background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .progress-bar { width: 100%; height: 30px; background: #e2e8f0; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        
+        .signature-container { background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        #signature-canvas { width: 100%; height: 200px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; }
+        .signature-actions { display: flex; gap: 10px; margin-top: 10px; }
+        
+        .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 10px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn-primary { background: #1e40af; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        
+        /* Toast */
+        .toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 9999; transform: translateX(400px); transition: transform 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .toast.show { transform: translateX(0); }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-warning { background: #f59e0b; }
+        .toast-info { background: #3b82f6; }
+        
+        footer { background: #1e293b; color: white; text-align: center; padding: 20px; margin-top: 30px; }
+        
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            .form-grid { grid-template-columns: 1fr; }
+            .nav-tab { font-size: 0.9em; padding: 10px; }
+            .import-summary { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 OBATOWN <span class="version-badge">v3.3</span></h1>
+            <p>Inspector de Calidad — Sistema de Inspección en Planta</p>
+        </header>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('inspeccion', event)">🔍 Inspección</div>
+            <div class="nav-tab" onclick="switchTab('planilla', event)">📊 Planilla de OTs</div>
+        </div>
+
+        <div class="content">
+            <!-- TAB: PLANILLA DE OTs -->
+            <div id="planilla" class="tab-content">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Cargar Planilla Semanal de Planificación</div>
+                    <div class="upload-hint">Tocá acá o arrastrá tu archivo Excel (.xls / .xlsx)</div>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+                    <div class="upload-hint" style="margin-top:15px; font-size:0.85em;">
+                        📋 Se detectan automáticamente: OT, Cliente, Descripción, Responsable, Sector, Estado, Fechas, Horas
+                    </div>
+                    <div class="last-update" id="lastUpdate" style="display:none;">
+                        📅 Última actualización: <strong id="lastUpdateDate"></strong>
+                    </div>
+                </div>
+
+                <div class="import-summary" id="importSummary" style="display:none;">
+                    <div class="summary-card total">
+                        <div class="summary-value" id="sumTotal">0</div>
+                        <div class="summary-label">Total en planilla</div>
+                    </div>
+                    <div class="summary-card new">
+                        <div class="summary-value" id="sumNew">0</div>
+                        <div class="summary-label">🆕 OTs nuevas agregadas</div>
+                    </div>
+                    <div class="summary-card updated">
+                        <div class="summary-value" id="sumUpdated">0</div>
+                        <div class="summary-label">🔄 OTs actualizadas</div>
+                    </div>
+                    <div class="summary-card skipped">
+                        <div class="summary-value" id="sumSkipped">0</div>
+                        <div class="summary-label">⏭️ OTs omitidas (cerradas)</div>
+                    </div>
+                </div>
+
+                <h2 style="margin-top:30px; color:#1e40af;">📋 Listado de OTs</h2>
+                
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterTable('todas', event)">Todas <span class="count" id="countTodas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('activas', event)">Activas <span class="count" id="countActivas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('finalizadas', event)">Finalizadas <span class="count" id="countFinalizadas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('rechazadas', event)">Rechazadas <span class="count" id="countRechazadas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('vencidas', event)" style="border-color:#ef4444;">🔴 Vencidas <span class="count" id="countVencidas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('proximas', event)" style="border-color:#f59e0b;">🟡 Próximas <span class="count" id="countProximas">0</span></button>
+                    <button class="filter-btn" onclick="filterTable('nuevas', event)" style="border-color:#10b981;">🆕 Nuevas esta semana <span class="count" id="countNuevas">0</span></button>
+                </div>
+
+                <div class="table-container">
+                    <table id="otTable">
+                        <thead>
+                            <tr>
+                                <th>OT</th>
+                                <th>Cliente</th>
+                                <th>Descripción</th>
+                                <th>Sector</th>
+                                <th>Responsable</th>
+                                <th>Estado Excel</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Entrega</th>
+                                <th>Fecha Real</th>
+                                <th>Días</th>
+                                <th>Horas (Presup./Aplic.)</th>
+                                <th>Estado Sistema</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Borrar Todo</button>
+                    <button class="btn btn-secondary" onclick="exportData()">📤 Exportar Datos</button>
+                </div>
+            </div>
+
+            <!-- TAB: INSPECCIÓN -->
+            <div id="inspeccion" class="tab-content active">
+                <div class="form-section">
+                    <h2>📋 Datos de Trazabilidad</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Orden de Trabajo (OT) *</label>
+                            <select id="otSelect" onchange="autoFillOT()">
+                                <option value="">Seleccionar OT...</option>
+                            </select>
+                            <small style="color:#64748b; margin-top:5px;">Cargá la planilla semanal para ver las OTs disponibles</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <input type="text" id="cliente" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Operario / Responsable</label>
+                            <input type="text" id="operario" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Sector</label>
+                            <input type="text" id="sectorExcel" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Inspección</label>
+                            <input type="date" id="fechaInspeccion">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado actual en planilla</label>
+                            <input type="text" id="estadoExcel" readonly style="background:#f1f5f9;">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Etapa / Proceso de Inspección *</label>
+                            <select id="etapa">
+                                <option value="">Seleccionar...</option>
+                                <option>Recepción de Materia Prima</option>
+                                <option>Calderería — Corte y Preparación</option>
+                                <option>Calderería — Rolado y Conformado</option>
+                                <option>Calderería — Armado y Alineación</option>
+                                <option>Mecanizado — Torno</option>
+                                <option>Mecanizado — Fresadora</option>
+                                <option>Mecanizado — Centro de Mecanizado</option>
+                                <option>Mecanizado — Rectificado</option>
+                                <option>Soldadura — SMAW</option>
+                                <option>Soldadura — GMAW/FCAW</option>
+                                <option>Soldadura — GTAW</option>
+                                <option>Soldadura — SAW</option>
+                                <option>Tratamiento Térmico</option>
+                                <option>Control Dimensional Final</option>
+                                <option>Ensayos No Destructivos</option>
+                                <option>Pintura y Acabado</option>
+                                <option>Embalaje y Expedición</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Inspector de Calidad</label>
+                            <input type="text" id="inspector" placeholder="Nombre del inspector">
+                        </div>
+                        <div class="form-group">
+                            <label>Turno</label>
+                            <select id="turno">
+                                <option value="">Seleccionar...</option>
+                                <option>Mañana</option>
+                                <option>Tarde</option>
+                                <option>Noche</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sector de Inspección</label>
+                            <input type="text" id="sectorInspeccion" placeholder="Ej: Planta 2 - Nave B">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Descripción del Trabajo a Inspeccionar</label>
+                            <textarea id="descripcion" rows="2" placeholder="Detalle del trabajo a inspeccionar..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>📧 Destinatarios del Reporte</h2>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" value="calidad"> Responsable de Calidad</label>
+                        <label class="checkbox-item"><input type="checkbox" value="caldereria"> Responsable de Calderería</label>
+                        <label class="checkbox-item"><input type="checkbox" value="deposito"> Responsable de Depósito</label>
+                        <label class="checkbox-item"><input type="checkbox" value="mecanizado"> Responsable de Mecanizado</label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>🔧 Tipos de Inspección a Realizar (tocá para seleccionar)</h2>
+                    <div class="type-grid" id="typeGrid"></div>
+                </div>
+
+                <div id="inspectionItems" style="display:none;"></div>
+
+                <div class="progress-container">
+                    <h2 style="color:#1e40af;">📊 Progreso Global de Inspección</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width:0%">0%</div>
+                    </div>
+                    <p id="progressText" style="text-align:center; margin-top:10px; font-weight:600;">0% completado (0 de 0 ítems)</p>
+                </div>
+
+                <div class="signature-container">
+                    <h2 style="color:#1e40af; margin-bottom:10px;">✍️ Firma del Inspector</h2>
+                    <p style="color:#64748b; margin-bottom:10px;">Firmá en el recuadro de abajo con el dedo o el mouse</p>
+                    <canvas id="signature-canvas"></canvas>
+                    <div class="signature-actions">
+                        <button class="btn btn-secondary" onclick="clearSignature()">🧹 Limpiar</button>
+                        <button class="btn btn-primary" onclick="saveSignature()">💾 Guardar Firma</button>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar Inspección</button>
+                    <button class="btn btn-primary" onclick="downloadPDF()">📄 Descargar PDF</button>
+                    <button class="btn btn-secondary" onclick="downloadWord()">📝 Descargar Word</button>
+                    <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar Todo</button>
+                    <button class="btn btn-primary" onclick="sendEmail()">📧 Enviar Reporte por Email</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>OBATOWN COMPANY</strong></p>
+            <p>Departamento de Calidad — ISO 9001:2015</p>
+            <p>Sistema de Inspección en Planta v3.3</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // PARSER ADAPTADO AL EXCEL REAL DE INMETAL
+        // ============================================
+        
+        // Patrones para detectar columnas (incluye los nombres reales de tu Excel)
+        const COLUMN_PATTERNS = {
+            ot: [/^o_?t_?$/i, /^ot\s*(n[uú]mero|num|nro|n°|#|id)?$/i, /^orden\s*(de\s*trabajo)?$/i, /^n[uú]mero\s*(de\s*)?ot$/i],
+            cliente: [/^cliente$/i, /client/i, /raz[oó]n\s*social/i],
+            descripcio: [/^descripcio$/i, /^descripci[oó]n$/i, /detalle/i, /^item$/i],
+            descripci2: [/^descripci2$/i, /^descripci[oó]n\s*2$/i, /detalle\s*2/i],
+            responsable: [/^responsabl/i, /responsable/i, /operario/i, /t[eé]cnico/i],
+            sector: [/^sector$/i, /[aá]rea/i, /proceso/i],
+            estado: [/^estado$/i, /status/i, /situaci[oó]n/i],
+            fechaInicio: [/^fecha$/i, /^fecha\s*inicio$/i, /^inicio$/i, /start/i],
+            fechaEntrega: [/^entrega$/i, /^fecha\s*entrega$/i, /^fecha\s*fin$/i, /end/i, /plazo/i, /deadline/i],
+            fechaReal: [/^fecha_real$/i, /^fecha\s*real$/i, /^fin\s*real$/i],
+            dias: [/^dias$/i, /^d[ií]as$/i, /remaining/i],
+            hsPresup: [/^hspresup$/i, /horas?\s*presup/i, /hs?\s*est/i],
+            hsAplic: [/^hsaplic$/i, /horas?\s*aplic/i, /hs?\s*real/i],
+            observaciones: [/^otras_obse$/i, /observaci[oó]n/i, /comentario/i]
+        };
+        
+        function findColumnIndex(headers, patterns) {
+            for (let i = 0; i < headers.length; i++) {
+                const h = String(headers[i] || '').trim();
+                if (patterns.some(p => p.test(h))) return i;
+            }
+            return -1;
+        }
+        
+        // Extrae número de OT limpiando el ".0" de Excel
+        function extractOTNumber(cellValue) {
+            if (cellValue == null) return null;
+            let str = String(cellValue).trim();
+            if (!str) return null;
+            
+            // Limpiar ".0" al final (viene de Excel como número)
+            str = str.replace(/\.0+$/, '');
+            
+            // Número puro de 4-10 dígitos
+            if (/^\d{4,10}$/.test(str)) return str;
+            
+            // Con prefijos: OT-309838, ot 309838
+            const match = str.match(/(?:OT[\s\-\/:]*)?(\d{4,10})/i);
+            if (match) return match[1];
+            
+            // Cualquier número de 4-10 dígitos
+            const m = str.match(/\b(\d{4,10})\b/);
+            return m ? m[1] : null;
+        }
+        
+        // Parsea fechas en múltiples formatos (incluye números de Excel)
+        function parseDate(value) {
+            if (value == null || value === '' || value === '-' || value === '  -   -  : :') return null;
+            
+            // Número de Excel (serial date)
+            if (typeof value === 'number' && value > 1000 && value < 100000) {
+                const utcDays = Math.floor(value - 25569);
+                const date = new Date(utcDays * 86400 * 1000);
+                if (!isNaN(date.getTime())) return date.toISOString().split('T')[0];
+            }
+            
+            const str = String(value).trim();
+            if (!str || str === '-' || str === '  -   -  : :') return null;
+            
+            // DD/MM/YYYY o DD-MM-YYYY
+            let match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+            if (match) {
+                let [_, d, m, y] = match;
+                if (y.length === 2) y = '20' + y;
+                return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+            }
+            
+            // YYYY-MM-DD
+            match = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+            if (match) {
+                const [_, y, m, d] = match;
+                return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+            }
+            
+            // Parseo nativo
+            const date = new Date(str);
+            if (!isNaN(date.getTime()) && date.getFullYear() > 1950) {
+                return date.toISOString().split('T')[0];
+            }
+            
+            return null;
+        }
+        
+        // Parsea horas en formato "HH:MM" o "HH:MM:SS"
+        function parseHoras(value) {
+            if (value == null || value === '' || value === '-' || value === '  -   -  : :') return null;
+            const str = String(value).trim();
+            const match = str.match(/^(\d+):(\d{2})(?::(\d{2}))?$/);
+            if (match) {
+                const h = parseInt(match[1]);
+                const m = parseInt(match[2]);
+                return h + (m / 60);
+            }
+            const num = parseFloat(str);
+            return !isNaN(num) ? num : null;
+        }
+        
+        function formatHoras(h) {
+            if (h == null) return '—';
+            const hours = Math.floor(h);
+            const mins = Math.round((h - hours) * 60);
+            return `${hours}:${String(mins).padStart(2, '0')}`;
+        }
+        
+        function calculateDaysRemaining(endDate) {
+            if (!endDate) return null;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const end = new Date(endDate);
+            end.setHours(0,0,0,0);
+            return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+        }
+        
+        function getSemaforoClass(daysRemaining, estadoManual) {
+            if (estadoManual === 'finalizada') return 'semaforo-azul';
+            if (estadoManual === 'rechazada') return 'semaforo-gris';
+            if (daysRemaining === null) return 'semaforo-gris';
+            if (daysRemaining < 0) return 'semaforo-rojo';
+            if (daysRemaining <= 3) return 'semaforo-amarillo';
+            return 'semaforo-verde';
+        }
+        
+        function formatDaysText(daysRemaining) {
+            if (daysRemaining === null) return '—';
+            if (daysRemaining < 0) return `Vencida hace ${Math.abs(daysRemaining)}d`;
+            if (daysRemaining === 0) return 'Vence hoy';
+            if (daysRemaining === 1) return '1 día';
+            return `${daysRemaining} días`;
+        }
+        
+        // Mapea el estado del Excel a una clase CSS para el badge
+        function getEstadoExcelClass(estado) {
+            if (!estado) return '';
+            const e = estado.toLowerCase();
+            if (e.includes('proceso')) return 'status-proceso';
+            if (e.includes('espera') || e.includes('detenido')) return 'status-espera';
+            if (e.includes('terminad') || e.includes('finaliz')) return 'status-finalizada';
+            return 'status-activa';
+        }
+
+        // ============================================
+        // DATOS Y ESTADO
+        // ============================================
+        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v33') || '[]');
+        let selectedTypes = new Set();
+        let inspectionItems = {};
+        let signaturePad = null;
+        let currentFilter = 'todas';
+        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import') || 'null');
+        
+        const inspectionTypes = [
+            { id: 'dimensional', label: 'Dimensional', icon: '📏' },
+            { id: 'dureza', label: 'Dureza', icon: '💎' },
+            { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' },
+            { id: 'roscas', label: 'Roscas', icon: '🔩' },
+            { id: 'soldadura', label: 'Soldadura', icon: '🔥' },
+            { id: 'pmi', label: 'PMI / Documental', icon: '📄' },
+            { id: 'caldereria', label: 'Calderería', icon: '🛠️' },
+            { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
+            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' },
+            { id: 'pintura', label: 'Pintura y Acabado', icon: '🎨' },
+            { id: 'recepcion_mp', label: 'Recepción de MP', icon: '📦' },
+            { id: 'dimensional_final', label: 'Dimensional Final', icon: '✅' }
+        ];
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fechaInspeccion').valueAsDate = new Date();
+            renderTypeGrid();
+            renderOTTable();
+            updateOTSelect();
+            initSignaturePad();
+            initUploadZone();
+            updateFilterCounts();
+            
+            if (lastImportStats) {
+                document.getElementById('lastUpdate').style.display = 'block';
+                document.getElementById('lastUpdateDate').textContent = lastImportStats.date;
+                showImportSummary(lastImportStats);
+            }
+        });
+
+        function initUploadZone() {
+            const zone = document.getElementById('uploadZone');
+            const input = document.getElementById('fileInput');
+            
+            zone.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON') input.click();
+            });
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+            input.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+            });
+        }
+
+        function initSignaturePad() {
+            const canvas = document.getElementById('signature-canvas');
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(255, 255, 255)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            function resize() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                signaturePad.clear();
+            }
+            resize();
+            window.addEventListener('resize', resize);
+        }
+
+        // ============================================
+        // CARGA DE EXCEL CON LÓGICA DE NO RECARGAR CERRADAS
+        // ============================================
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
+                    
+                    if (rows.length < 2) {
+                        showToast('La planilla está vacía', 'error');
+                        return;
+                    }
+                    
+                    const headers = rows[0].map(h => String(h || '').trim());
+                    const dataRows = rows.slice(1);
+                    
+                    // Detectar TODAS las columnas
+                    const idx = {
+                        ot: findColumnIndex(headers, COLUMN_PATTERNS.ot),
+                        cliente: findColumnIndex(headers, COLUMN_PATTERNS.cliente),
+                        descripcio: findColumnIndex(headers, COLUMN_PATTERNS.descripcio),
+                        descripci2: findColumnIndex(headers, COLUMN_PATTERNS.descripci2),
+                        responsable: findColumnIndex(headers, COLUMN_PATTERNS.responsable),
+                        sector: findColumnIndex(headers, COLUMN_PATTERNS.sector),
+                        estado: findColumnIndex(headers, COLUMN_PATTERNS.estado),
+                        fechaInicio: findColumnIndex(headers, COLUMN_PATTERNS.fechaInicio),
+                        fechaEntrega: findColumnIndex(headers, COLUMN_PATTERNS.fechaEntrega),
+                        fechaReal: findColumnIndex(headers, COLUMN_PATTERNS.fechaReal),
+                        dias: findColumnIndex(headers, COLUMN_PATTERNS.dias),
+                        hsPresup: findColumnIndex(headers, COLUMN_PATTERNS.hsPresup),
+                        hsAplic: findColumnIndex(headers, COLUMN_PATTERNS.hsAplic),
+                        observaciones: findColumnIndex(headers, COLUMN_PATTERNS.observaciones)
+                    };
+                    
+                    if (idx.ot === -1) {
+                        showToast('❌ No se encontró la columna de OT. Verificá el Excel.', 'error');
+                        return;
+                    }
+                    
+                    // Contadores de importación
+                    let stats = { total: 0, new: 0, updated: 0, skipped: 0 };
+                    const importDate = new Date().toLocaleString('es-AR');
+                    
+                    dataRows.forEach(row => {
+                        if (!row || row.every(c => c == null || c === '')) return;
+                        
+                        const otNumber = extractOTNumber(row[idx.ot]);
+                        if (!otNumber) return;
+                        
+                        stats.total++;
+                        
+                        // Combinar descripciones si hay 2 columnas
+                        let descripcion = '';
+                        if (idx.descripcio >= 0 && row[idx.descripcio]) {
+                            descripcion = String(row[idx.descripcio]).trim();
+                        }
+                        if (idx.descripci2 >= 0 && row[idx.descripci2]) {
+                            const d2 = String(row[idx.descripci2]).trim();
+                            if (d2 && d2 !== descripcion) {
+                                descripcion = descripcion ? `${descripcion} — ${d2}` : d2;
+                            }
+                        }
+                        
+                        const estadoExcel = idx.estado >= 0 ? String(row[idx.estado] || '').trim() : '';
+                        
+                        // ⭐ LÓGICA CLAVE: NO RECARGAR OTs CERRADAS EN EL SISTEMA
+                        const existing = otsData.find(o => o.ot === otNumber);
+                        
+                        if (existing && (existing.estadoManual === 'finalizada' || existing.estadoManual === 'rechazada')) {
+                            stats.skipped++;
+                            // Solo actualizamos el estado del Excel (para info) pero NO tocamos el estado manual
+                            existing.estadoExcel = estadoExcel;
+                            existing._skipReason = 'cerrada';
+                            return;
+                        }
+                        
+                        // Parsear fechas y horas
+                        const fechaInicio = idx.fechaInicio >= 0 ? parseDate(row[idx.fechaInicio]) : null;
+                        const fechaEntrega = idx.fechaEntrega >= 0 ? parseDate(row[idx.fechaEntrega]) : null;
+                        const fechaReal = idx.fechaReal >= 0 ? parseDate(row[idx.fechaReal]) : null;
+                        const dias = idx.dias >= 0 ? parseInt(row[idx.dias]) : null;
+                        const hsPresup = idx.hsPresup >= 0 ? parseHoras(row[idx.hsPresup]) : null;
+                        const hsAplic = idx.hsAplic >= 0 ? parseHoras(row[idx.hsAplic]) : null;
+                        
+                        const newOT = {
+                            ot: otNumber,
+                            cliente: idx.cliente >= 0 ? String(row[idx.cliente] || '').trim() : '',
+                            descripcion: descripcion,
+                            sector: idx.sector >= 0 ? String(row[idx.sector] || '').trim() : '',
+                            responsable: idx.responsable >= 0 ? String(row[idx.responsable] || '').trim() : '',
+                            estadoExcel: estadoExcel,
+                            fechaInicio: fechaInicio,
+                            fechaEntrega: fechaEntrega,
+                            fechaReal: fechaReal,
+                            dias: isNaN(dias) ? null : dias,
+                            hsPresup: hsPresup,
+                            hsAplic: hsAplic,
+                            observaciones: idx.observaciones >= 0 ? String(row[idx.observaciones] || '').trim() : '',
+                            estadoPlanilla: 'cargada',
+                            estadoManual: existing?.estadoManual || 'activa',
+                            ultimaActualizacion: importDate,
+                            esNueva: !existing
+                        };
+                        
+                        if (existing) {
+                            // Preservar datos del sistema (estado manual, fecha fin real, etc.)
+                            const preserved = {
+                                estadoManual: existing.estadoManual,
+                                fechaFinReal: existing.fechaFinReal,
+                                inspecciones: existing.inspecciones
+                            };
+                            Object.assign(existing, newOT, preserved);
+                            existing._skipReason = null;
+                            stats.updated++;
+                        } else {
+                            otsData.push(newOT);
+                            stats.new++;
+                        }
+                    });
+                    
+                    // Guardar
+                    localStorage.setItem('obatown_ots_v33', JSON.stringify(otsData));
+                    localStorage.setItem('obatown_last_import', JSON.stringify({
+                        date: importDate,
+                        ...stats
+                    }));
+                    lastImportStats = { date: importDate, ...stats };
+                    
+                    // Actualizar UI
+                    renderOTTable();
+                    updateOTSelect();
+                    updateFilterCounts();
+                    showImportSummary(stats);
+                    
+                    document.getElementById('lastUpdate').style.display = 'block';
+                    document.getElementById('lastUpdateDate').textContent = importDate;
+                    
+                    showToast(`✅ Importación completa: ${stats.new} nuevas, ${stats.updated} actualizadas, ${stats.skipped} omitidas`, 'success');
+                    
+                } catch (err) {
+                    showToast('❌ Error al leer el archivo: ' + err.message, 'error');
+                    console.error(err);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function showImportSummary(stats) {
+            document.getElementById('importSummary').style.display = 'grid';
+            document.getElementById('sumTotal').textContent = stats.total;
+            document.getElementById('sumNew').textContent = stats.new;
+            document.getElementById('sumUpdated').textContent = stats.updated;
+            document.getElementById('sumSkipped').textContent = stats.skipped;
+        }
+
+        // ============================================
+        // RENDERIZADO DE TABLA
+        // ============================================
+        function renderOTTable() {
+            const tbody = document.getElementById('otTableBody');
+            tbody.innerHTML = '';
+            
+            let filteredData = otsData;
+            if (currentFilter === 'activas') filteredData = otsData.filter(o => o.estadoManual === 'activa');
+            else if (currentFilter === 'finalizadas') filteredData = otsData.filter(o => o.estadoManual === 'finalizada');
+            else if (currentFilter === 'rechazadas') filteredData = otsData.filter(o => o.estadoManual === 'rechazada');
+            else if (currentFilter === 'vencidas') {
+                filteredData = otsData.filter(o => {
+                    const days = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega);
+                    return days !== null && days < 0 && o.estadoManual === 'activa';
+                });
+            }
+            else if (currentFilter === 'proximas') {
+                filteredData = otsData.filter(o => {
+                    const days = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega);
+                    return days !== null && days >= 0 && days <= 3 && o.estadoManual === 'activa';
+                });
+            }
+            else if (currentFilter === 'nuevas') {
+                filteredData = otsData.filter(o => o.esNueva === true);
+            }
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding:30px; color:#64748b;">No hay OTs para mostrar</td></tr>';
+                return;
+            }
+            
+            filteredData.forEach((ot) => {
+                const days = ot.dias != null ? ot.dias : calculateDaysRemaining(ot.fechaEntrega);
+                const semaforoClass = getSemaforoClass(days, ot.estadoManual);
+                const daysText = (ot.estadoManual === 'finalizada') ? 'Finalizada' : 
+                                 (ot.estadoManual === 'rechazada') ? 'Rechazada' :
+                                 formatDaysText(days);
+                
+                // Horas con alerta si se excedieron
+                let horasText = '—';
+                let horasClass = 'horas-cell';
+                if (ot.hsPresup != null || ot.hsAplic != null) {
+                    const presup = ot.hsPresup != null ? formatHoras(ot.hsPresup) : '—';
+                    const aplic = ot.hsAplic != null ? formatHoras(ot.hsAplic) : '—';
+                    horasText = `${presup} / ${aplic}`;
+                    if (ot.hsPresup != null && ot.hsAplic != null && ot.hsAplic > ot.hsPresup) {
+                        horasClass += ' horas-excedidas';
+                    }
+                }
+                
+                const row = document.createElement('tr');
+                if (ot.esNueva) row.classList.add('row-new');
+                if (ot.estadoManual === 'finalizada' || ot.estadoManual === 'rechazada') row.classList.add('row-closed');
+                
+                const estadoExcelClass = getEstadoExcelClass(ot.estadoExcel);
+                
+                row.innerHTML = `
+                    <td class="ot-number">${ot.ot}</td>
+                    <td class="cliente-cell" title="${ot.cliente || ''}">${ot.cliente || '—'}</td>
+                    <td class="desc-cell" title="${ot.descripcion || ''}">${ot.descripcion || '—'}</td>
+                    <td>${ot.sector || '—'}</td>
+                    <td>${ot.responsable || '—'}</td>
+                    <td><span class="estado-excel ${estadoExcelClass}">${ot.estadoExcel || '—'}</span></td>
+                    <td class="fecha-cell">${ot.fechaInicio ? formatDateDisplay(ot.fechaInicio) : '—'}</td>
+                    <td class="fecha-cell">${ot.fechaEntrega ? formatDateDisplay(ot.fechaEntrega) : '—'}</td>
+                    <td class="fecha-cell">${ot.fechaReal ? formatDateDisplay(ot.fechaReal) : '—'}</td>
+                    <td><span class="semaforo ${semaforoClass} dias-restantes">${daysText}</span></td>
+                    <td class="${horasClass}">${horasText}</td>
+                    <td><span class="status-badge status-${ot.estadoManual}">${ot.estadoManual}</span></td>
+                    <td>
+                        ${ot.estadoManual === 'activa' ? `
+                            <button class="action-btn btn-select" onclick="selectOT('${ot.ot}')">🔍 Inspeccionar</button>
+                            <button class="action-btn btn-finish" onclick="markFinished('${ot.ot}')">✅ Finalizar</button>
+                            <button class="action-btn btn-reject" onclick="markRejected('${ot.ot}')">❌ Rechazar</button>
+                        ` : `<span style="color:#64748b; font-size:0.8em;">Cerrada</span>`}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function formatDateDisplay(isoDate) {
+            if (!isoDate) return '—';
+            const parts = isoDate.split('-');
+            if (parts.length !== 3) return isoDate;
+            const [y, m, d] = parts;
+            return `${d}/${m}/${y}`;
+        }
+
+        function filterTable(filter, event) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if (event && event.target) event.target.closest('.filter-btn').classList.add('active');
+            renderOTTable();
+        }
+        
+        function updateFilterCounts() {
+            document.getElementById('countTodas').textContent = otsData.length;
+            document.getElementById('countActivas').textContent = otsData.filter(o => o.estadoManual === 'activa').length;
+            document.getElementById('countFinalizadas').textContent = otsData.filter(o => o.estadoManual === 'finalizada').length;
+            document.getElementById('countRechazadas').textContent = otsData.filter(o => o.estadoManual === 'rechazada').length;
+            document.getElementById('countVencidas').textContent = otsData.filter(o => {
+                const days = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega);
+                return days !== null && days < 0 && o.estadoManual === 'activa';
+            }).length;
+            document.getElementById('countProximas').textContent = otsData.filter(o => {
+                const days = o.dias != null ? o.dias : calculateDaysRemaining(o.fechaEntrega);
+                return days !== null && days >= 0 && days <= 3 && o.estadoManual === 'activa';
+            }).length;
+            document.getElementById('countNuevas').textContent = otsData.filter(o => o.esNueva === true).length;
+        }
+
+        // ============================================
+        // ACCIONES DE OTs
+        // ============================================
+        function selectOT(otNumber) {
+            document.getElementById('otSelect').value = otNumber;
+            autoFillOT();
+            // Cambiar a tab de inspección
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-tab')[0].classList.add('active');
+            document.getElementById('inspeccion').classList.add('active');
+        }
+
+        function markFinished(otNumber) {
+            const ot = otsData.find(o => o.ot === otNumber);
+            if (ot) {
+                ot.estadoManual = 'finalizada';
+                ot.fechaReal = new Date().toISOString().split('T')[0];
+                ot.esNueva = false;
+                localStorage.setItem('obatown_ots_v33', JSON.stringify(otsData));
+                renderOTTable();
+                updateOTSelect();
+                updateFilterCounts();
+                showToast(`✅ OT ${otNumber} marcada como finalizada`, 'success');
+            }
+        }
+
+        function markRejected(otNumber) {
+            const ot = otsData.find(o => o.ot === otNumber);
+            if (ot) {
+                if (!confirm(`¿Seguro que querés RECHAZAR la OT ${otNumber}? No se volverá a cargar en futuras actualizaciones.`)) return;
+                ot.estadoManual = 'rechazada';
+                ot.esNueva = false;
+                localStorage.setItem('obatown_ots_v33', JSON.stringify(otsData));
+                renderOTTable();
+                updateOTSelect();
+                updateFilterCounts();
+                showToast(`❌ OT ${otNumber} rechazada`, 'warning');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('¿Seguro que querés borrar TODAS las OTs? Esta acción no se puede deshacer.')) {
+                if (confirm('⚠️ ÚLTIMA CONFIRMACIÓN: Se perderán todos los datos. ¿Continuar?')) {
+                    otsData = [];
+                    localStorage.removeItem('obatown_ots_v33');
+                    localStorage.removeItem('obatown_last_import');
+                    lastImportStats = null;
+                    document.getElementById('importSummary').style.display = 'none';
+                    document.getElementById('lastUpdate').style.display = 'none';
+                    renderOTTable();
+                    updateOTSelect();
+                    updateFilterCounts();
+                    showToast('🗑️ Todos los datos fueron borrados', 'info');
+                }
+            }
+        }
+
+        function exportData() {
+            const exportRows = otsData.map(ot => ({
+                'OT': ot.ot,
+                'Cliente': ot.cliente,
+                'Descripción': ot.descripcion,
+                'Sector': ot.sector,
+                'Responsable': ot.responsable,
+                'Estado Excel': ot.estadoExcel,
+                'Fecha Inicio': ot.fechaInicio ? formatDateDisplay(ot.fechaInicio) : '',
+                'Fecha Entrega': ot.fechaEntrega ? formatDateDisplay(ot.fechaEntrega) : '',
+                'Fecha Real': ot.fechaReal ? formatDateDisplay(ot.fechaReal) : '',
+                'Días': ot.dias != null ? ot.dias : '',
+                'Horas Presup.': ot.hsPresup != null ? formatHoras(ot.hsPresup) : '',
+                'Horas Aplic.': ot.hsAplic != null ? formatHoras(ot.hsAplic) : '',
+                'Estado Sistema': ot.estadoManual,
+                'Observaciones': ot.observaciones
+            }));
+            const ws = XLSX.utils.json_to_sheet(exportRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'OTs');
+            XLSX.writeFile(wb, `OTs_OBATOWN_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast('📤 Datos exportados correctamente', 'success');
+        }
+
+        // ============================================
+        // SELECTOR DE OT
+        // ============================================
+        function updateOTSelect() {
+            const select = document.getElementById('otSelect');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">Seleccionar OT...</option>';
+            otsData.filter(o => o.estadoManual === 'activa').forEach(ot => {
+                const opt = document.createElement('option');
+                opt.value = ot.ot;
+                const days = ot.dias != null ? ot.dias : calculateDaysRemaining(ot.fechaEntrega);
+                const semaforo = days !== null ? (days < 0 ? '🔴' : days <= 3 ? '🟡' : '🟢') : '';
+                const nueva = ot.esNueva ? '🆕 ' : '';
+                opt.textContent = `${nueva}${semaforo} OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
+                select.appendChild(opt);
+            });
+            if (currentValue) select.value = currentValue;
+        }
+
+        function autoFillOT() {
+            const otNumber = document.getElementById('otSelect').value;
+            const ot = otsData.find(o => o.ot === otNumber);
+            if (ot) {
+                document.getElementById('cliente').value = ot.cliente || '';
+                document.getElementById('operario').value = ot.responsable || '';
+                document.getElementById('sectorExcel').value = ot.sector || '';
+                document.getElementById('estadoExcel').value = ot.estadoExcel || '';
+                document.getElementById('descripcion').value = ot.descripcion || '';
+            } else {
+                document.getElementById('cliente').value = '';
+                document.getElementById('operario').value = '';
+                document.getElementById('sectorExcel').value = '';
+                document.getElementById('estadoExcel').value = '';
+                document.getElementById('descripcion').value = '';
+            }
+        }
+
+        // ============================================
+        // TIPOS DE INSPECCIÓN
+        // ============================================
+        function renderTypeGrid() {
+            const grid = document.getElementById('typeGrid');
+            grid.innerHTML = inspectionTypes.map(t => `
+                <div class="type-chip" data-type="${t.id}" onclick="toggleType('${t.id}')">
+                    ${t.icon} ${t.label}
+                </div>
+            `).join('');
+        }
+
+        function toggleType(typeId) {
+            const chip = document.querySelector(`[data-type="${typeId}"]`);
+            if (selectedTypes.has(typeId)) {
+                selectedTypes.delete(typeId);
+                chip.classList.remove('selected');
+            } else {
+                selectedTypes.add(typeId);
+                chip.classList.add('selected');
+            }
+            renderInspectionItems();
+        }
+
+        function renderInspectionItems() {
+            const container = document.getElementById('inspectionItems');
+            if (selectedTypes.size === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            container.innerHTML = '';
+            
+            selectedTypes.forEach(typeId => {
+                const type = inspectionTypes.find(t => t.id === typeId);
+                const items = getItemsForType(typeId);
+                inspectionItems[typeId] = items.map(() => ({ status: '', value: '', obs: '' }));
+                
+                const section = document.createElement('div');
+                section.className = 'form-section';
+                section.innerHTML = `
+                    <h2>${type.icon} ${type.label}</h2>
+                    <div id="items-${typeId}">
+                        ${items.map((item, idx) => `
+                            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap:10px; margin-bottom:10px; align-items:center;">
+                                <span>${item}</span>
+                                <select onchange="updateItem('${typeId}', ${idx}, 'status', this.value)">
+                                    <option value="">Sin evaluar</option>
+                                    <option value="ok">✅ Conforme</option>
+                                    <option value="nc">❌ No Conforme</option>
+                                    <option value="obs">⚠️ Con Observación</option>
+                                    <option value="na">➖ No Aplica</option>
+                                </select>
+                                <input type="text" placeholder="Valor medido" onchange="updateItem('${typeId}', ${idx}, 'value', this.value)">
+                                <input type="text" placeholder="Observación" onchange="updateItem('${typeId}', ${idx}, 'obs', this.value)">
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            updateProgress();
+        }
+
+        function getItemsForType(typeId) {
+            const items = {
+                dimensional: ['Longitud total', 'Ancho', 'Alto', 'Diámetro exterior', 'Diámetro interior', 'Espesor', 'Perpendicularidad', 'Planicidad'],
+                dureza: ['Dureza Brinell (HB)', 'Dureza Rockwell (HRC)', 'Dureza Vickers (HV)', 'Punto 1', 'Punto 2', 'Punto 3'],
+                rugosidad: ['Ra superficie principal', 'Ra superficie mecanizada', 'Acabado visual'],
+                roscas: ['Paso de rosca', 'Diámetro nominal', 'Profundidad', 'Calibre pasa/no pasa'],
+                soldadura: ['Aspecto visual del cordón', 'Penetración', 'Refuerzo', 'Porosidad', 'Mordeduras', 'Falta de fusión', 'PSI / WPS aplicado'],
+                pmi: ['Certificado de material', 'Composición química', 'Propiedades mecánicas', 'Trazabilidad heat number'],
+                caldereria: ['Corte según plano', 'Rolado según radio', 'Alineación de partes', 'Puntos de soldadura'],
+                mecanizado: ['Medidas según plano', 'Tolerancias dimensionales', 'Acabado superficial', 'Chamfres y filetes'],
+                armado: ['Secuencia de armado', 'Alineación final', 'Juegos y ajustes', 'Torque de apriete'],
+                pintura: ['Espesor de película seca', 'Adherencia (cross-cut)', 'Color / RAL', 'Ausencia de defectos'],
+                recepcion_mp: ['Certificado del proveedor', 'Inspección visual', 'Medidas de ingreso', 'Estado de embalaje'],
+                dimensional_final: ['Medidas finales críticas', 'Verificación funcional', 'Prueba hidráulica/neumática', 'Marcaje final']
+            };
+            return items[typeId] || [];
+        }
+
+        function updateItem(typeId, idx, field, value) {
+            inspectionItems[typeId][idx][field] = value;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let total = 0, completed = 0;
+            Object.values(inspectionItems).forEach(items => {
+                items.forEach(item => {
+                    total++;
+                    if (item.status) completed++;
+                });
+            });
+            const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+            const fill = document.getElementById('progressFill');
+            fill.style.width = pct + '%';
+            fill.textContent = pct + '%';
+            fill.style.background = pct < 50 ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                                     pct < 80 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' :
+                                     'linear-gradient(90deg, #10b981, #34d399)';
+            document.getElementById('progressText').textContent = `${pct}% completado (${completed} de ${total} ítems)`;
+        }
+
+        function clearSignature() { signaturePad.clear(); }
+        function saveSignature() {
+            if (signaturePad.isEmpty()) {
+                showToast('Firmá primero en el recuadro', 'warning');
+                return;
+            }
+            localStorage.setItem('obatown_signature', signaturePad.toDataURL());
+            showToast('✅ Firma guardada', 'success');
+        }
+
+        function evaluateInspection() {
+            const ot = document.getElementById('otSelect').value;
+            const etapa = document.getElementById('etapa').value;
+            if (!ot) return showToast('Seleccioná una OT', 'warning');
+            if (!etapa) return showToast('Seleccioná una etapa', 'warning');
+            if (selectedTypes.size === 0) return showToast('Seleccioná al menos un tipo de inspección', 'warning');
+            
+            let ncs = 0, obs = 0;
+            Object.values(inspectionItems).forEach(items => {
+                items.forEach(item => {
+                    if (item.status === 'nc') ncs++;
+                    if (item.status === 'obs') obs++;
+                });
+            });
+            
+            let msg = ncs > 0 ? `❌ Inspección NO CONFORME — ${ncs} no conformidad(es)` :
+                      obs > 0 ? `⚠️ Inspección CONFORME con ${obs} observación(es)` :
+                      '✅ Inspección CONFORME';
+            showToast(msg, ncs > 0 ? 'error' : obs > 0 ? 'warning' : 'success');
+        }
+
+        function downloadPDF() { window.print(); }
+        
+        function downloadWord() {
+            const content = document.querySelector('.container').innerHTML;
+            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="utf-8"></head><body>${content}</body></html>`;
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Inspeccion_OT${document.getElementById('otSelect').value || 'N/A'}_${new Date().toISOString().split('T')[0]}.doc`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function sendEmail() {
+            const ot = document.getElementById('otSelect').value;
+            const subject = `Reporte de Inspección OT ${ot}`;
+            const body = `Se adjunta reporte de inspección para la OT ${ot}`;
+            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+
+        function resetForm() {
+            if (!confirm('¿Seguro que querés reiniciar el formulario?')) return;
+            document.getElementById('otSelect').value = '';
+            document.getElementById('cliente').value = '';
+            document.getElementById('operario').value = '';
+            document.getElementById('sectorExcel').value = '';
+            document.getElementById('estadoExcel').value = '';
+            document.getElementById('etapa').value = '';
+            document.getElementById('inspector').value = '';
+            document.getElementById('turno').value = '';
+            document.getElementById('sectorInspeccion').value = '';
+            document.getElementById('descripcion').value = '';
+            document.querySelectorAll('.checkbox-item input').forEach(c => c.checked = false);
+            selectedTypes.clear();
+            document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
+            document.getElementById('inspectionItems').innerHTML = '';
+            document.getElementById('inspectionItems').style.display = 'none';
+            signaturePad.clear();
+            updateProgress();
+            showToast('🔄 Formulario reiniciado', 'info');
+        }
+
+        function switchTab(tab, event) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+    </script>
+</body>
+</html>
