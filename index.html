@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspector de Calidad - OBATOWN v3.7</title>
+    <title>Inspector de Calidad - OBATOWN v3.6</title>
     <!-- Librerías externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <!-- Librería para crear archivos ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Google API para Drive -->
-    <script src="https://apis.google.com/js/api.js"></script>
     
     <style>
+        /* (Mismos estilos de la v3.5 para mantener la consistencia visual) */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
@@ -23,15 +23,6 @@
         header h1 { font-size: 2.5em; margin-bottom: 5px; }
         header p { font-size: 1.1em; opacity: 0.9; }
         .version-badge { display: inline-block; background: #10b981; padding: 3px 10px; border-radius: 12px; font-size: 0.8em; margin-left: 10px; }
-        
-        /* Indicador de estado de Drive */
-        .drive-status { position: fixed; top: 10px; right: 10px; padding: 8px 15px; border-radius: 20px; font-size: 0.85em; font-weight: 600; z-index: 9998; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .drive-status.connected { background: #10b981; color: white; }
-        .drive-status.disconnected { background: #ef4444; color: white; }
-        .drive-status.connecting { background: #f59e0b; color: white; }
-        .drive-status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
         .nav-tabs { display: flex; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; }
         .nav-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         .nav-tab:hover { background: #e2e8f0; }
@@ -139,17 +130,6 @@
         .log-detail { color: #334155; word-break: break-word; }
         .log-user { text-align: right; color: #64748b; font-weight: 600; }
         
-        /* ESTILOS PARA ÍTEMS CON FOTOS INDIVIDUALES */
-        .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 80px; gap: 10px; margin-bottom: 10px; align-items: center; padding: 10px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .item-row:hover { border-color: #1e40af; }
-        .item-photo-btn { background: #0ea5e9; color: white; border: none; border-radius: 6px; padding: 8px; cursor: pointer; font-size: 1.2em; transition: all 0.2s; position: relative; }
-        .item-photo-btn:hover { background: #0284c7; transform: scale(1.05); }
-        .item-photo-btn.has-photos { background: #10b981; }
-        .item-photo-count { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7em; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        .item-photos-preview { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
-        .item-photo-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
-        .item-photo-thumb:hover { border-color: #1e40af; transform: scale(1.1); }
-        
         .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 10px; position: sticky; bottom: 10px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
         .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
@@ -160,7 +140,6 @@
         .btn-danger { background: #ef4444; color: white; }
         .btn-info { background: #0ea5e9; color: white; }
         .btn-drive { background: #4285F4; color: white; }
-        .btn-drive-offline { background: #f59e0b; color: white; }
         
         .toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 9999; transform: translateX(400px); transition: transform 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .toast.show { transform: translateX(0); }
@@ -180,21 +159,14 @@
             .btn { width: 100%; justify-content: center; }
             .log-item { grid-template-columns: 1fr; gap: 2px; }
             .log-user { text-align: left; }
-            .item-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Indicador de estado de Google Drive -->
-    <div id="driveStatus" class="drive-status disconnected">
-        <span class="dot"></span>
-        <span id="driveStatusText">Drive: Desconectado</span>
-    </div>
-
     <div class="container">
         <header>
-            <h1>🔍 OBATOWN <span class="version-badge">v3.7</span></h1>
-            <p>Inspector de Calidad — Con Google Drive y Fotos por Ítem</p>
+            <h1>🔍 OBATOWN <span class="version-badge">v3.6</span></h1>
+            <p>Inspector de Calidad — Sistema con Repositorio y Exportación a Drive</p>
         </header>
 
         <div class="nav-tabs">
@@ -203,7 +175,7 @@
         </div>
 
         <div class="content">
-            <!-- TAB: PLANILLA DE OTs -->
+            <!-- TAB: PLANILLA DE OTs (Idéntica a v3.5) -->
             <div id="planilla" class="tab-content">
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📁</div>
@@ -211,7 +183,7 @@
                     <div class="upload-hint">Tocá acá o arrastrá tu archivo Excel (.xls / .xlsx)</div>
                     <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
                     <div class="last-update" id="lastUpdate" style="display:none;">
-                         Última actualización: <strong id="lastUpdateDate"></strong>
+                        📅 Última actualización: <strong id="lastUpdateDate"></strong>
                     </div>
                 </div>
 
@@ -219,7 +191,7 @@
                     <div class="summary-card"><div class="summary-value" id="sumTotal">0</div><div class="summary-label">Total en planilla</div></div>
                     <div class="summary-card new" style="border-left-color: #10b981;"><div class="summary-value" id="sumNew">0</div><div class="summary-label">🆕 OTs nuevas</div></div>
                     <div class="summary-card updated" style="border-left-color: #3b82f6;"><div class="summary-value" id="sumUpdated">0</div><div class="summary-label">🔄 Actualizadas</div></div>
-                    <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">️ Omitidas (cerradas)</div></div>
+                    <div class="summary-card skipped" style="border-left-color: #64748b;"><div class="summary-value" id="sumSkipped">0</div><div class="summary-label">⏭️ Omitidas (cerradas)</div></div>
                 </div>
 
                 <h2 style="margin-top:30px; color:#1e40af;">📋 Listado de OTs</h2>
@@ -285,13 +257,13 @@
                     </div>
                 </div>
 
-                <!-- REPOSITORIO GENERAL DE LA OT -->
+                <!-- REPOSITORIO DE LA OT -->
                 <div class="form-section">
-                    <h2>📎 Repositorio General de Evidencias <span id="repo-ot-number" style="font-size:0.7em; color:#64748b; font-weight:400;"></span></h2>
-                    <p style="color:#64748b; margin-bottom:15px; font-size:0.9em;">Documentos generales de la OT (planos, certificados, fotos generales). Las fotos de cada ítem se adjuntan directamente en la sección de inspección.</p>
+                    <h2>📎 Repositorio de Evidencias <span id="repo-ot-number" style="font-size:0.7em; color:#64748b; font-weight:400;"></span></h2>
+                    <p style="color:#64748b; margin-bottom:15px; font-size:0.9em;">Adjuntá fotos, planos, certificados o cualquier documento relevante. Se guardan con trazabilidad.</p>
                     <div class="repo-actions">
                         <label class="btn btn-primary">
-                             Sacar Foto / Subir Imagen
+                            📷 Sacar Foto / Subir Imagen
                             <input type="file" id="input-photo" accept="image/*" capture="environment" hidden onchange="handleFileUpload(this, 'photo')">
                         </label>
                         <label class="btn btn-secondary">
@@ -344,8 +316,7 @@
                     <button class="btn btn-success" onclick="evaluateInspection()">📊 Evaluar Inspección</button>
                     <button class="btn btn-primary" onclick="generateFormalPDF()">📄 Descargar PDF</button>
                     <button class="btn btn-secondary" onclick="generateFormalWord()">📝 Descargar Word</button>
-                    <button class="btn btn-drive" onclick="uploadToDrive()">️ Subir a Drive (Automático)</button>
-                    <button class="btn btn-drive-offline" onclick="exportOTToZip()">📦 Empaquetar ZIP (Manual)</button>
+                    <button class="btn btn-drive" onclick="exportOTToZip()">📦 Empaquetar OT para Drive (ZIP)</button>
                     <button class="btn btn-info" onclick="prepareEmail()">📧 Preparar Email</button>
                     <button class="btn btn-warning" onclick="resetForm()">🔄 Reiniciar Todo</button>
                 </div>
@@ -355,28 +326,13 @@
         <footer>
             <p><strong>OBATOWN COMPANY</strong></p>
             <p>Departamento de Calidad — ISO 9001:2015</p>
-            <p>Sistema de Inspección en Planta v3.7</p>
+            <p>Sistema de Inspección en Planta v3.6</p>
         </footer>
     </div>
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DE GOOGLE DRIVE
-        // ============================================
-        const GOOGLE_DRIVE_CONFIG = {
-            CLIENT_ID: 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com', // ← REEMPLAZAR CON TU CLIENT ID
-            FOLDER_ID: '1s_-tCLSIOu4SD9N6_HFy6FRHnBfi2rHg',
-            SCOPES: 'https://www.googleapis.com/auth/drive.file'
-        };
-
-        let gapiInited = false;
-        let gisInited = false;
-        let tokenClient = null;
-        let accessToken = null;
-        let driveConnected = false;
-
-        // ============================================
-        // CONFIGURACIÓN DE BASE DE DATOS LOCAL
+        // CONFIGURACIÓN DE BASE DE DATOS LOCAL (IndexedDB)
         // ============================================
         localforage.config({ name: 'ObatownQualityDB', version: 1.0, storeName: 'ot_repository' });
 
@@ -510,19 +466,19 @@
         // ============================================
         // ESTADO GLOBAL
         // ============================================
-        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v37') || '[]');
+        let otsData = JSON.parse(localStorage.getItem('obatown_ots_v36') || '[]');
         let selectedTypes = new Set();
         let inspectionItems = {};
         let signaturePad = null;
         let currentFilter = 'todas';
-        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import_v37') || 'null');
+        let lastImportStats = JSON.parse(localStorage.getItem('obatown_last_import_v36') || 'null');
         
         const inspectionTypes = [
             { id: 'dimensional', label: 'Dimensional', icon: '📏' }, { id: 'dureza', label: 'Dureza', icon: '💎' },
             { id: 'rugosidad', label: 'Rugosidad', icon: '🔬' }, { id: 'roscas', label: 'Roscas', icon: '🔩' },
             { id: 'soldadura', label: 'Soldadura', icon: '🔥' }, { id: 'pmi', label: 'PMI / Documental', icon: '📄' },
             { id: 'caldereria', label: 'Calderería', icon: '🛠️' }, { id: 'mecanizado', label: 'Mecanizado Planos', icon: '⚙️' },
-            { id: 'armado', label: 'Armado / Montaje', icon: '' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '🎨' },
+            { id: 'armado', label: 'Armado / Montaje', icon: '🧩' }, { id: 'pintura', label: 'Pintura y Acabado', icon: '🎨' },
             { id: 'recepcion_mp', label: 'Recepción de MP', icon: '📦' }, { id: 'dimensional_final', label: 'Dimensional Final', icon: '✅' }
         ];
 
@@ -533,177 +489,6 @@
             document.body.appendChild(toast);
             requestAnimationFrame(() => toast.classList.add('show'));
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
-        }
-
-        // ============================================
-        // INICIALIZACIÓN DE GOOGLE DRIVE API
-        // ============================================
-        function updateDriveStatus(status, text) {
-            const statusEl = document.getElementById('driveStatus');
-            const textEl = document.getElementById('driveStatusText');
-            statusEl.className = `drive-status ${status}`;
-            textEl.textContent = text;
-        }
-
-        async function initGoogleDrive() {
-            if (GOOGLE_DRIVE_CONFIG.CLIENT_ID === 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com') {
-                updateDriveStatus('disconnected', 'Drive: Configurar Client ID');
-                console.warn('Google Drive no configurado: reemplazá CLIENT_ID en el código');
-                return;
-            }
-
-            try {
-                updateDriveStatus('connecting', 'Drive: Conectando...');
-                
-                await new Promise((resolve, reject) => {
-                    gapi.load('client', async () => {
-                        try {
-                            await gapi.client.init({
-                                apiKey: 'AIzaSyDummy', // No requerido para OAuth
-                                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                            });
-                            gapiInited = true;
-                            resolve();
-                        } catch (err) {
-                            reject(err);
-                        }
-                    });
-                });
-
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
-                    scope: GOOGLE_DRIVE_CONFIG.SCOPES,
-                    callback: (response) => {
-                        if (response.access_token) {
-                            accessToken = response.access_token;
-                            driveConnected = true;
-                            updateDriveStatus('connected', 'Drive: Conectado ✓');
-                            showToast('✅ Conectado a Google Drive', 'success');
-                        } else {
-                            driveConnected = false;
-                            updateDriveStatus('disconnected', 'Drive: Desconectado');
-                            showToast('❌ Error al conectar con Drive', 'error');
-                        }
-                    }
-                });
-
-                gisInited = true;
-                updateDriveStatus('disconnected', 'Drive: Listo para conectar');
-            } catch (err) {
-                console.error('Error inicializando Google Drive:', err);
-                updateDriveStatus('disconnected', 'Drive: Error de configuración');
-            }
-        }
-
-        async function connectToDrive() {
-            if (!tokenClient) {
-                showToast('⚠️ Google Drive no está configurado. Usá el modo ZIP manual.', 'warning');
-                exportOTToZip();
-                return;
-            }
-
-            if (driveConnected) {
-                showToast('✅ Ya estás conectado a Drive', 'success');
-                return;
-            }
-
-            try {
-                tokenClient.requestAccessToken({ prompt: 'consent' });
-            } catch (err) {
-                showToast('❌ Error al conectar: ' + err.message, 'error');
-            }
-        }
-
-        async function uploadFileToDrive(fileName, fileContent, mimeType) {
-            if (!driveConnected || !accessToken) {
-                throw new Error('No hay conexión con Google Drive');
-            }
-
-            const metadata = {
-                name: fileName,
-                parents: [GOOGLE_DRIVE_CONFIG.FOLDER_ID]
-            };
-
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            form.append('file', new Blob([fileContent], { type: mimeType }));
-
-            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                body: form
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'Error al subir a Drive');
-            }
-
-            return await response.json();
-        }
-
-        async function uploadToDrive() {
-            const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
-
-            if (!driveConnected) {
-                if (confirm('No estás conectado a Google Drive. ¿Querés conectarte ahora?')) {
-                    connectToDrive();
-                } else {
-                    showToast('💡 Usá el botón "📦 Empaquetar ZIP" como alternativa', 'info');
-                }
-                return;
-            }
-
-            try {
-                showToast('☁️ Subiendo archivos a Drive...', 'info');
-                const otData = otsData.find(o => o.ot === ot) || {};
-                const folderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
-                
-                // Crear carpeta de la OT en Drive
-                const folderMetadata = {
-                    name: folderName,
-                    mimeType: 'application/vnd.google-apps.folder',
-                    parents: [GOOGLE_DRIVE_CONFIG.FOLDER_ID]
-                };
-
-                const folderResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
-                    method: 'POST',
-                    headers: new Headers({
-                        'Authorization': 'Bearer ' + accessToken,
-                        'Content-Type': 'application/json'
-                    }),
-                    body: JSON.stringify(folderMetadata)
-                });
-
-                if (!folderResponse.ok) throw new Error('Error al crear carpeta');
-                const folder = await folderResponse.json();
-                const folderId = folder.id;
-
-                // Subir archivo de información
-                const infoText = `ORDEN DE TRABAJO: ${ot}\nCLIENTE: ${otData.cliente || 'N/A'}\nDESCRIPCIÓN: ${otData.descripcion || 'N/A'}\nRESPONSABLE: ${otData.responsable || 'N/A'}\nSECTOR: ${otData.sector || 'N/A'}\nESTADO: ${otData.estadoManual || 'N/A'}\nFECHA: ${new Date().toLocaleString('es-AR')}`;
-                await uploadFileToDrive('00_INFO_OT.txt', infoText, 'text/plain');
-
-                // Subir archivos adjuntos del repositorio
-                const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
-                for (const file of attachments) {
-                    const base64Data = file.data.split(',')[1];
-                    const byteCharacters = atob(base64Data);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    await uploadFileToDrive(file.name, byteArray, file.mimeType);
-                }
-
-                await addTraceabilityLog(ot, 'SUBIDA_DRIVE', `Archivos subidos a Google Drive en carpeta: ${folderName}`);
-                showToast(`✅ Archivos subidos a Drive en: ${folderName}`, 'success');
-                
-            } catch (err) {
-                console.error(err);
-                showToast('❌ Error al subir a Drive: ' + err.message + '. Usá el modo ZIP.', 'error');
-            }
         }
 
         // ============================================
@@ -723,9 +508,6 @@
                 document.getElementById('lastUpdateDate').textContent = lastImportStats.date;
                 showImportSummary(lastImportStats);
             }
-            
-            // Inicializar Google Drive
-            initGoogleDrive();
         });
 
         function renderContactList() {
@@ -775,7 +557,7 @@
         }
 
         // ============================================
-        // CARGA DE EXCEL
+        // CARGA DE EXCEL (Lógica v3.5 preservada)
         // ============================================
         function handleFile(file) {
             const reader = new FileReader();
@@ -858,8 +640,8 @@
                         }
                     });
                     
-                    localStorage.setItem('obatown_ots_v37', JSON.stringify(otsData));
-                    localStorage.setItem('obatown_last_import_v37', JSON.stringify({ date: importDate, ...stats }));
+                    localStorage.setItem('obatown_ots_v36', JSON.stringify(otsData));
+                    localStorage.setItem('obatown_last_import_v36', JSON.stringify({ date: importDate, ...stats }));
                     lastImportStats = { date: importDate, ...stats };
                     renderOTTable(); updateOTSelect(); updateFilterCounts(); showImportSummary(stats);
                     document.getElementById('lastUpdate').style.display = 'block';
@@ -948,15 +730,15 @@
         }
         function markFinished(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('obatown_ots_v37', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
+            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('obatown_ots_v36', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
         }
         function markRejected(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('obatown_ots_v37', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(` OT ${otNumber} rechazada`, 'warning'); }
+            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('obatown_ots_v36', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
         }
         function clearAllData() {
             if (confirm('¿Borrar TODAS las OTs?') && confirm('⚠️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
-                otsData = []; localStorage.removeItem('obatown_ots_v37'); localStorage.removeItem('obatown_last_import_v37');
+                otsData = []; localStorage.removeItem('obatown_ots_v36'); localStorage.removeItem('obatown_last_import_v36');
                 lastImportStats = null; document.getElementById('importSummary').style.display = 'none'; document.getElementById('lastUpdate').style.display = 'none';
                 renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
             }
@@ -978,8 +760,8 @@
                 const opt = document.createElement('option');
                 opt.value = ot.ot;
                 const days = ot.dias != null ? ot.dias : calculateDaysRemaining(ot.fechaEntrega);
-                const semaforo = days !== null ? (days < 0 ? '' : days <= 3 ? '' : '🟢') : '';
-                opt.textContent = `${ot.esNueva ? ' ' : ''}${semaforo} OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
+                const semaforo = days !== null ? (days < 0 ? '🔴' : days <= 3 ? '🟡' : '🟢') : '';
+                opt.textContent = `${ot.esNueva ? '🆕 ' : ''}${semaforo} OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
                 select.appendChild(opt);
             });
             if (currentValue) select.value = currentValue;
@@ -1038,7 +820,7 @@
                     attachments.push(fileData);
                     await localforage.setItem(key, attachments);
                     
-                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : ' Documento'}: ${file.name}`);
+                    await addTraceabilityLog(ot, 'SUBIDA', `${type === 'photo' ? '📷 Foto' : '📄 Documento'}: ${file.name}`);
                     await renderRepository(ot);
                     showToast(`✅ ${file.name} guardado en el repositorio`, 'success');
                 };
@@ -1055,11 +837,11 @@
             const logs = await localforage.getItem(`OT_${ot}_logs`) || [];
 
             if (attachments.length === 0) {
-                list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px; background:white; border-radius:8px; border:1px dashed #cbd5e1;">No hay archivos adjuntos para esta OT.</p>';
+                list.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px; background:white; border-radius:8px; border:1px dashed #cbd5e1;">No hay archivos adjuntos para esta OT. Usá los botones de arriba para agregar evidencia.</p>';
             } else {
                 list.innerHTML = attachments.map((file) => `
                     <div class="repo-item">
-                        <div class="repo-icon">${file.type === 'photo' ? '' : '📄'}</div>
+                        <div class="repo-icon">${file.type === 'photo' ? '📷' : '📄'}</div>
                         <div class="repo-info">
                             <div class="repo-name">${file.name}</div>
                             <div class="repo-meta">${(file.size / 1024).toFixed(1)} KB • ${new Date(file.date).toLocaleString('es-AR')} • 👤 ${file.user}</div>
@@ -1080,7 +862,7 @@
                         <span class="log-time">${new Date(log.date).toLocaleString('es-AR')}</span>
                         <span class="log-action">${log.action}</span>
                         <span class="log-detail">${log.detail}</span>
-                        <span class="log-user"> ${log.user}</span>
+                        <span class="log-user">👤 ${log.user}</span>
                     </div>
                 `).join('');
             }
@@ -1112,71 +894,50 @@
         }
 
         // ============================================
-        // 🚀 NUEVA FUNCIÓN: FOTOS POR ÍTEM DE CONTROL
+        // 🚀 NUEVA FUNCIÓN: EMPAQUETAR OT PARA DRIVE (ZIP)
         // ============================================
-        async function handleItemPhotoUpload(typeId, itemIdx, input) {
-            const files = input.files;
+        async function exportOTToZip() {
             const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('️ Seleccioná una OT primero', 'warning');
-            
-            const inspectorName = document.getElementById('inspector').value || 'Anónimo';
-            const type = inspectionTypes.find(t => t.id === typeId);
-            const items = getItemsForType(typeId);
-            const itemName = items[itemIdx];
+            if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
 
-            for (let file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast(`❌ La foto ${file.name} supera los 5MB`, 'error');
-                    continue;
+            showToast('📦 Empaquetando archivos, por favor esperá...', 'info');
+
+            try {
+                const zip = new JSZip();
+                const otFolder = zip.folder(`OT_${ot}`);
+                const otData = otsData.find(o => o.ot === ot) || {};
+                
+                // 1. Agregar un archivo de texto con los datos de trazabilidad
+                const infoText = `ORDEN DE TRABAJO: ${ot}\nCLIENTE: ${otData.cliente || 'N/A'}\nDESCRIPCIÓN: ${otData.descripcion || 'N/A'}\nRESPONSABLE: ${otData.responsable || 'N/A'}\nSECTOR: ${otData.sector || 'N/A'}\nESTADO: ${otData.estadoManual || 'N/A'}\nFECHA DE EXPORTACIÓN: ${new Date().toLocaleString('es-AR')}`;
+                otFolder.file("00_INFO_OT.txt", infoText);
+
+                // 2. Agregar archivos adjuntos del repositorio
+                const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
+                if (attachments.length > 0) {
+                    const attachFolder = otFolder.folder("EVIDENCIAS_Y_DOCUMENTOS");
+                    for (const file of attachments) {
+                        // Convertir base64 a blob para JSZip
+                        const base64Data = file.data.split(',')[1];
+                        attachFolder.file(file.name, base64Data, { base64: true });
+                    }
                 }
 
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const photoData = {
-                        id: Date.now() + Math.random().toString(36).substr(2, 9),
-                        name: file.name,
-                        data: e.target.result,
-                        mimeType: file.type,
-                        size: file.size,
-                        date: new Date().toISOString(),
-                        user: inspectorName,
-                        typeId: typeId,
-                        itemIdx: itemIdx,
-                        itemName: itemName
-                    };
-                    
-                    // Guardar en el repositorio de la OT con prefijo especial
-                    const key = `OT_${ot}_attachments`;
-                    let attachments = await localforage.getItem(key) || [];
-                    attachments.push({
-                        ...photoData,
-                        type: 'item_photo',
-                        name: `[${type.label}] ${itemName} - ${file.name}`
-                    });
-                    await localforage.setItem(key, attachments);
-                    
-                    // Actualizar el estado del ítem
-                    if (!inspectionItems[typeId][itemIdx].photos) {
-                        inspectionItems[typeId][itemIdx].photos = [];
-                    }
-                    inspectionItems[typeId][itemIdx].photos.push(photoData);
-                    
-                    await addTraceabilityLog(ot, 'FOTO ÍTEM', ` Foto para ${type.label} > ${itemName}: ${file.name}`);
-                    renderInspectionItems(); // Re-renderizar para mostrar la foto
-                    showToast(`✅ Foto adjunta a "${itemName}"`, 'success');
-                };
-                reader.readAsDataURL(file);
+                // 3. Generar el ZIP y descargarlo
+                const content = await zip.generateAsync({ type: "blob" });
+                const cleanClientName = (otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+                saveAs(content, `OBATOWN_OT_${ot}_${cleanClientName}.zip`);
+                
+                await addTraceabilityLog(ot, 'EXPORTACIÓN', 'Se empaquetó la carpeta de la OT para Google Drive');
+                showToast('✅ ZIP descargado. Ahora arrastralo a tu carpeta de Google Drive', 'success');
+                
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Error al empaquetar: ' + err.message, 'error');
             }
-            input.value = '';
-        }
-
-        function viewItemPhoto(photoDataUrl) {
-            const win = window.open();
-            win.document.write(`<img src="${photoDataUrl}" style="max-width:100%; height:auto;" />`);
         }
 
         // ============================================
-        // LÓGICA DE INSPECCIÓN (con fotos por ítem)
+        // LÓGICA DE INSPECCIÓN Y REPORTES (Igual que v3.5)
         // ============================================
         function renderTypeGrid() {
             document.getElementById('typeGrid').innerHTML = inspectionTypes.map(t => `<div class="type-chip" data-type="${t.id}" onclick="toggleType('${t.id}')">${t.icon} ${t.label}</div>`).join('');
@@ -1194,32 +955,18 @@
             selectedTypes.forEach(typeId => {
                 const type = inspectionTypes.find(t => t.id === typeId);
                 const items = getItemsForType(typeId);
-                if (!inspectionItems[typeId]) {
-                    inspectionItems[typeId] = items.map(() => ({ status: '', value: '', obs: '', photos: [] }));
-                }
+                inspectionItems[typeId] = items.map(() => ({ status: '', value: '', obs: '' }));
                 const section = document.createElement('div');
                 section.className = 'form-section';
-                section.innerHTML = `<h2>${type.icon} ${type.label}</h2><div id="items-${typeId}">${items.map((item, idx) => {
-                    const itemData = inspectionItems[typeId][idx] || { status: '', value: '', obs: '', photos: [] };
-                    const photoCount = itemData.photos ? itemData.photos.length : 0;
-                    return `
-                    <div class="item-row">
-                        <div>
-                            <span style="font-weight:600;">${item}</span>
-                            ${photoCount > 0 ? `<div class="item-photos-preview">${itemData.photos.slice(0, 3).map(p => `<img src="${p.data}" class="item-photo-thumb" onclick="viewItemPhoto('${p.data}')" title="${p.name}" />`).join('')}${photoCount > 3 ? `<span style="font-size:0.8em; color:#64748b;">+${photoCount - 3} más</span>` : ''}</div>` : ''}
-                        </div>
+                section.innerHTML = `<h2>${type.icon} ${type.label}</h2><div id="items-${typeId}">${items.map((item, idx) => `
+                    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap:10px; margin-bottom:10px; align-items:center;">
+                        <span>${item}</span>
                         <select onchange="updateItem('${typeId}', ${idx}, 'status', this.value)">
-                            <option value="">Sin evaluar</option><option value="ok" ${itemData.status === 'ok' ? 'selected' : ''}>✅ Conforme</option><option value="nc" ${itemData.status === 'nc' ? 'selected' : ''}>❌ No Conforme</option><option value="obs" ${itemData.status === 'obs' ? 'selected' : ''}>⚠️ Observación</option><option value="na" ${itemData.status === 'na' ? 'selected' : ''}>➖ No Aplica</option>
+                            <option value="">Sin evaluar</option><option value="ok">✅ Conforme</option><option value="nc">❌ No Conforme</option><option value="obs">⚠️ Observación</option><option value="na">➖ No Aplica</option>
                         </select>
-                        <input type="text" placeholder="Valor" value="${itemData.value || ''}" onchange="updateItem('${typeId}', ${idx}, 'value', this.value)">
-                        <input type="text" placeholder="Observación" value="${itemData.obs || ''}" onchange="updateItem('${typeId}', ${idx}, 'obs', this.value)">
-                        <label class="item-photo-btn ${photoCount > 0 ? 'has-photos' : ''}" title="Adjuntar foto a este ítem">
-                            📷
-                            ${photoCount > 0 ? `<span class="item-photo-count">${photoCount}</span>` : ''}
-                            <input type="file" accept="image/*" capture="environment" hidden onchange="handleItemPhotoUpload('${typeId}', ${idx}, this)">
-                        </label>
-                    </div>`;
-                }).join('')}</div>`;
+                        <input type="text" placeholder="Valor" onchange="updateItem('${typeId}', ${idx}, 'value', this.value)">
+                        <input type="text" placeholder="Observación" onchange="updateItem('${typeId}', ${idx}, 'obs', this.value)">
+                    </div>`).join('')}</div>`;
                 container.appendChild(section);
             });
             updateProgress();
@@ -1241,11 +988,7 @@
             };
             return items[typeId] || [];
         }
-        function updateItem(typeId, idx, field, value) { 
-            if (!inspectionItems[typeId][idx]) inspectionItems[typeId][idx] = { status: '', value: '', obs: '', photos: [] };
-            inspectionItems[typeId][idx][field] = value; 
-            updateProgress(); 
-        }
+        function updateItem(typeId, idx, field, value) { inspectionItems[typeId][idx][field] = value; updateProgress(); }
         function updateProgress() {
             let total = 0, completed = 0;
             Object.values(inspectionItems).forEach(items => { items.forEach(item => { total++; if (item.status) completed++; }); });
@@ -1273,13 +1016,9 @@
             showToast(msg, ncs > 0 ? 'error' : obs > 0 ? 'warning' : 'success');
         }
 
-        // ============================================
-        // GENERACIÓN DE PDF FORMAL (con fotos por ítem)
-        // ============================================
         async function generateFormalPDF() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             const pageWidth = doc.internal.pageSize.getWidth();
@@ -1331,8 +1070,7 @@
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
                         const statusText = { ok: 'Conforme', nc: 'No Conforme', obs: 'Observación', na: 'No Aplica' }[item.status] || item.status;
-                        const items = getItemsForType(typeId);
-                        tableData.push([type.label, items[idx], statusText, item.value || '—', item.obs || '—']);
+                        tableData.push([type.label, `Ítem ${idx + 1}`, statusText, item.value || '—', item.obs || '—']);
                     }
                 });
             });
@@ -1351,48 +1089,31 @@
                     }
                 });
                 y = doc.lastAutoTable.finalY + 10;
-            }
-
-            // Sección de fotos por ítem
-            doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-            doc.text('3. EVIDENCIAS FOTOGRÁFICAS POR ÍTEM', margin, y);
-            y += 5;
-            
-            let hasItemPhotos = false;
-            Object.keys(inspectionItems).forEach(typeId => {
-                const type = inspectionTypes.find(t => t.id === typeId);
-                inspectionItems[typeId].forEach((item, idx) => {
-                    if (item.photos && item.photos.length > 0) {
-                        hasItemPhotos = true;
-                        const items = getItemsForType(typeId);
-                        doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                        doc.text(`${type.label} - ${items[idx]}`, margin, y);
-                        y += 5;
-                        
-                        item.photos.forEach((photo, pIdx) => {
-                            if (y > 250) { doc.addPage(); y = 20; }
-                            try {
-                                doc.addImage(photo.data, 'JPEG', margin, y, 40, 30);
-                                doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-                                doc.text(photo.name.substring(0, 30), margin + 42, y + 5);
-                                y += 32;
-                            } catch (e) {
-                                doc.text(`[Foto ${pIdx + 1}: ${photo.name}]`, margin, y);
-                                y += 5;
-                            }
-                        });
-                        y += 3;
-                    }
-                });
-            });
-            
-            if (!hasItemPhotos) {
+            } else {
                 doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text('No se adjuntaron fotos a los ítems.', margin, y);
+                doc.text('No se registraron ítems evaluados.', margin, y);
                 y += 10;
             }
 
-            // Firma
+            doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+            doc.text('3. EVIDENCIAS Y ADJUNTOS EN REPOSITORIO', margin, y);
+            y += 5;
+            
+            const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
+            if (attachments.length > 0) {
+                const attachData = attachments.map(f => [f.type === 'photo' ? 'Foto' : 'Doc', f.name, `${(f.size/1024).toFixed(1)} KB`, f.user]);
+                doc.autoTable({
+                    startY: y, head: [['Tipo', 'Nombre del Archivo', 'Peso', 'Subido por']], body: attachData,
+                    margin: { left: margin, right: margin }, theme: 'striped', styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' }
+                });
+                y = doc.lastAutoTable.finalY + 10;
+            } else {
+                doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+                doc.text('No se adjuntaron evidencias en el repositorio.', margin, y);
+                y += 10;
+            }
+
             if (y > 220) { doc.addPage(); y = 20; }
             doc.setFontSize(14); doc.setFont('helvetica', 'bold');
             doc.text('4. FIRMA DEL INSPECTOR', margin, y);
@@ -1414,11 +1135,11 @@
                 doc.setDrawColor(200);
                 doc.line(margin, 285, pageWidth - margin, 285);
                 doc.setFontSize(8); doc.setTextColor(120);
-                doc.text(`OBATOWN — Departamento de Calidad | ISO 9001:2015 | Página ${i} de ${pageCount}`, pageWidth / 2, 290, { align: 'center' });
+                doc.text(`OBATOWN — Departamento de Calidad | ISO 9001:2015 | Documento generado electrónicamente | Página ${i} de ${pageCount}`, pageWidth / 2, 290, { align: 'center' });
             }
 
             doc.save(`Inspeccion_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
-            showToast('📄 PDF Formal generado con fotos por ítem', 'success');
+            showToast('📄 PDF Formal generado', 'success');
         }
 
         async function generateFormalWord() {
@@ -1431,25 +1152,33 @@
             let itemsHtml = '';
             Object.keys(inspectionItems).forEach(typeId => {
                 const type = inspectionTypes.find(t => t.id === typeId);
-                const items = getItemsForType(typeId);
                 itemsHtml += `<h3 style="color:#1e40af; margin-top:15px; border-bottom:1px solid #ccc; padding-bottom:5px;">${type.icon} ${type.label}</h3>`;
                 itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:11pt; margin-bottom:15px;">
-                    <tr style="background:#f1f5f9;"><th style="border:1px solid #ccc; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Observación</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Fotos</th></tr>`;
+                    <tr style="background:#f1f5f9;"><th style="border:1px solid #ccc; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ccc; padding:6px; text-align:left;">Observación</th></tr>`;
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
-                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: ' No Aplica' }[item.status] || item.status;
-                        const photoCount = item.photos ? item.photos.length : 0;
+                        const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
                         itemsHtml += `<tr>
-                            <td style="border:1px solid #ccc; padding:6px;">${items[idx]}</td>
+                            <td style="border:1px solid #ccc; padding:6px;">${idx + 1}</td>
                             <td style="border:1px solid #ccc; padding:6px;">${statusText}</td>
                             <td style="border:1px solid #ccc; padding:6px;">${item.value || '—'}</td>
                             <td style="border:1px solid #ccc; padding:6px;">${item.obs || '—'}</td>
-                            <td style="border:1px solid #ccc; padding:6px;">${photoCount > 0 ? `📷 ${photoCount} foto(s)` : '—'}</td>
                         </tr>`;
                     }
                 });
                 itemsHtml += `</table>`;
             });
+
+            const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
+            let attachHtml = '<p>No se adjuntaron evidencias.</p>';
+            if (attachments.length > 0) {
+                attachHtml = `<table style="width:100%; border-collapse:collapse; font-size:10pt;">
+                    <tr style="background:#f1f5f9;"><th style="border:1px solid #ccc; padding:6px;">Tipo</th><th style="border:1px solid #ccc; padding:6px;">Archivo</th><th style="border:1px solid #ccc; padding:6px;">Subido por</th></tr>`;
+                attachments.forEach(f => {
+                    attachHtml += `<tr><td style="border:1px solid #ccc; padding:6px;">${f.type === 'photo' ? '📷 Foto' : '📄 Doc'}</td><td style="border:1px solid #ccc; padding:6px;">${f.name}</td><td style="border:1px solid #ccc; padding:6px;">${f.user}</td></tr>`;
+                });
+                attachHtml += `</table><p style="font-size:9pt; color:#666; margin-top:10px;">* Los archivos físicos/digitales se encuentran en el repositorio del sistema.</p>`;
+            }
 
             const htmlContent = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -1490,7 +1219,11 @@
                         ${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}
                     </div>
                     <div class="section">
-                        <h2>3. Firma del Inspector</h2>
+                        <h2>3. Evidencias y Adjuntos en Repositorio</h2>
+                        ${attachHtml}
+                    </div>
+                    <div class="section">
+                        <h2>4. Firma del Inspector</h2>
                         <p><strong>${inspector}</strong></p>
                         <p>Fecha: ${fecha}</p>
                         ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:300px; border:1px solid #ccc;" />` : '<p><em>Firma no registrada</em></p>'}
@@ -1511,45 +1244,6 @@
             showToast('📝 Word Formal generado', 'success');
         }
 
-        // ============================================
-        // EMPAQUETAR ZIP (FALLBACK OFFLINE)
-        // ============================================
-        async function exportOTToZip() {
-            const ot = document.getElementById('otSelect').value;
-            if (!ot) return showToast('️ Seleccioná una OT primero', 'warning');
-
-            showToast('📦 Empaquetando archivos...', 'info');
-
-            try {
-                const zip = new JSZip();
-                const otFolder = zip.folder(`OT_${ot}`);
-                const otData = otsData.find(o => o.ot === ot) || {};
-                
-                const infoText = `ORDEN DE TRABAJO: ${ot}\nCLIENTE: ${otData.cliente || 'N/A'}\nDESCRIPCIÓN: ${otData.descripcion || 'N/A'}\nRESPONSABLE: ${otData.responsable || 'N/A'}\nSECTOR: ${otData.sector || 'N/A'}\nESTADO: ${otData.estadoManual || 'N/A'}\nFECHA: ${new Date().toLocaleString('es-AR')}`;
-                otFolder.file("00_INFO_OT.txt", infoText);
-
-                const attachments = await localforage.getItem(`OT_${ot}_attachments`) || [];
-                if (attachments.length > 0) {
-                    const attachFolder = otFolder.folder("EVIDENCIAS_Y_DOCUMENTOS");
-                    for (const file of attachments) {
-                        const base64Data = file.data.split(',')[1];
-                        attachFolder.file(file.name, base64Data, { base64: true });
-                    }
-                }
-
-                const content = await zip.generateAsync({ type: "blob" });
-                const cleanClientName = (otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-                saveAs(content, `OBATOWN_OT_${ot}_${cleanClientName}.zip`);
-                
-                await addTraceabilityLog(ot, 'EXPORTACIÓN_ZIP', 'Se empaquetó la carpeta de la OT (modo offline)');
-                showToast('✅ ZIP descargado. Subilo manualmente a Drive', 'success');
-                
-            } catch (err) {
-                console.error(err);
-                showToast('❌ Error al empaquetar: ' + err.message, 'error');
-            }
-        }
-
         function prepareEmail() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
@@ -1565,17 +1259,17 @@
 
             const emailsString = selectedEmails.join('; ');
             navigator.clipboard.writeText(emailsString).then(() => {
-                showToast(`✅ ${selectedEmails.length} correos copiados`, 'success');
+                showToast(`✅ ${selectedEmails.length} correos copiados al portapapeles`, 'success');
             }).catch(() => {
-                showToast('⚠️ No se pudo copiar', 'warning');
+                showToast('⚠️ No se pudo copiar. Seleccioná y copiá manualmente.', 'warning');
             });
 
             const inspector = document.getElementById('inspector').value || 'Inspector';
             const subject = `Reporte de Inspección de Calidad - OT ${ot}`;
-            const body = `Estimados,\n\nSe adjunta el reporte de inspección de calidad correspondiente a la OT ${ot}.\n\nInspector: ${inspector}\nFecha: ${new Date().toLocaleDateString('es-AR')}\n\nLos archivos se encuentran en Google Drive o adjuntos en este correo.\n\nSaludos cordiales,\nDepartamento de Calidad - OBATOWN`;
+            const body = `Estimados,\n\nSe adjunta el reporte de inspección de calidad correspondiente a la OT ${ot}.\n\nInspector: ${inspector}\nFecha: ${new Date().toLocaleDateString('es-AR')}\n\nPor favor, adjuntar el archivo PDF descargado a este correo. Las evidencias (fotos, planos, certificados) se encuentran en el repositorio del sistema o en la carpeta compartida de Drive.\n\nSaludos cordiales,\nDepartamento de Calidad - OBATOWN`;
             
             window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            showToast('💡 Pegá los correos en "Para:"', 'info');
+            showToast('💡 Pegá los correos en "Para:" y adjuntá el PDF descargado', 'info');
         }
 
         function resetForm() {
@@ -1585,13 +1279,12 @@
             document.querySelectorAll('.contact-item input[type="checkbox"]').forEach(cb => cb.checked = false);
             selectedTypes.clear();
             document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
-            inspectionItems = {};
             document.getElementById('inspectionItems').innerHTML = '';
             document.getElementById('inspectionItems').style.display = 'none';
             signaturePad.clear();
             updateProgress();
-            document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT.</p>';
-            document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros.</p>';
+            document.getElementById('repo-file-list').innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">Seleccioná una OT para ver su repositorio.</p>';
+            document.getElementById('traceability-log').innerHTML = '<p style="color:#64748b; text-align:center;">Sin registros de auditoría.</p>';
             document.getElementById('repo-ot-number').textContent = '';
             showToast('🔄 Formulario reiniciado', 'info');
         }
