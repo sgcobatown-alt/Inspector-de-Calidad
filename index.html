@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inspector de Calidad - INMETAL OBATOWN v4.0</title>
+    <title>Inspector de Calidad - INMETAL OBATOWN v4.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -19,26 +19,11 @@
         html, body { height: 100%; width: 100%; }
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; }
         
-        /* Contenedor principal: Pantalla completa en móvil, tarjeta en desktop */
-        .container { 
-            background: white; 
-            min-height: 100vh; 
-            width: 100%; 
-            display: flex; 
-            flex-direction: column; 
-        }
+        .container { background: white; min-height: 100vh; width: 100%; display: flex; flex-direction: column; }
         
         @media (min-width: 769px) {
             body { padding: 20px; }
-            .container { 
-                max-width: 1400px; 
-                margin: 0 auto; 
-                border-radius: 15px; 
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
-                min-height: auto;
-                max-height: 95vh;
-                overflow-y: auto;
-            }
+            .container { max-width: 1400px; margin: 0 auto; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); min-height: auto; max-height: 95vh; overflow-y: auto; }
         }
 
         header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px; text-align: center; flex-shrink: 0; }
@@ -117,10 +102,9 @@
         @media (min-width: 769px) { .form-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); } }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; margin-bottom: 4px; color: #334155; font-size: 0.9em; }
-        /* Font-size 16px previene zoom automático en iOS al hacer focus */
         .form-group input, .form-group select, .form-group textarea { 
             padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border 0.3s; 
-            -webkit-appearance: none; appearance: none;
+            -webkit-appearance: none; appearance: none; background: white;
         }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1e40af; }
         .form-group.full-width { grid-column: 1 / -1; }
@@ -210,7 +194,7 @@
 
     <div class="container">
         <header>
-            <h1>🔍 INMETAL OBATOWN <span class="version-badge">v4.0</span></h1>
+            <h1>🔍 INMETAL OBATOWN <span class="version-badge">v4.1</span></h1>
             <p>Industria Metalúrgica — Sistema de Inspección en Planta</p>
         </header>
 
@@ -464,19 +448,13 @@
         <footer>
             <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
             <p>Departamento de Calidad — ISO 9001:2015</p>
-            <p>Sistema de Inspección en Planta v4.0</p>
+            <p>Sistema de Inspección en Planta v4.1</p>
         </footer>
     </div>
 
     <script>
-        // ============================================
-        // LOGO INMETAL EN BASE64 (Simplificado)
-        // ============================================
         const INMETAL_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
         
-        // ============================================
-        // CONFIGURACIÓN DE GOOGLE DRIVE
-        // ============================================
         const GOOGLE_DRIVE_CONFIG = {
             CLIENT_ID: '815260596124-e39t9nof99eb14ekdio1n1kup8ittovg.apps.googleusercontent.com',
             FOLDER_ID: '1s_-tCLSIOu4SD9N6_HFy6FRHnBfi2rHg',
@@ -490,14 +468,8 @@
         let materialSignaturePad = null;
         let materialPhotos = {};
 
-        // ============================================
-        // CONFIGURACIÓN DE BASE DE DATOS LOCAL
-        // ============================================
         localforage.config({ name: 'InmetalQualityDB', version: 1.0, storeName: 'ot_repository' });
 
-        // ============================================
-        // LISTADO DE CONTACTOS CORPORATIVO
-        // ============================================
         const contactList = [
             { area: "CALIDAD", contacts: [{ name: "Jonathan Aguirre (Jefatura)", email: "gestiondecalidad@in-metal.com.ar" }] },
             { area: "GERENCIA", contacts: [
@@ -534,9 +506,6 @@
             { area: "CONSULTOR EXTERNO", contacts: [{ name: "Consultor Externo", email: "jluquin@eulerconsultora.com.ar" }] }
         ];
 
-        // ============================================
-        // PARSER Y CONFIGURACIÓN
-        // ============================================
         const COLUMN_PATTERNS = {
             ot: [/^o_?t_?$/i, /^ot\s*(n[uú]mero|num|nro|n°|#|id)?$/i, /^orden\s*(de\s*trabajo)?$/i],
             cliente: [/^cliente$/i, /client/i, /raz[oó]n\s*social/i],
@@ -622,9 +591,6 @@
             return daysRemaining === 1 ? '1 día' : `${daysRemaining} días`;
         }
 
-        // ============================================
-        // ESTADO GLOBAL
-        // ============================================
         let otsData = JSON.parse(localStorage.getItem('inmetal_ots_v40') || '[]');
         let selectedTypes = new Set();
         let inspectionItems = {};
@@ -650,9 +616,6 @@
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        // ============================================
-        // INICIALIZACIÓN DE GOOGLE DRIVE API
-        // ============================================
         function updateDriveStatus(status, text) {
             const statusEl = document.getElementById('driveStatus');
             const textEl = document.getElementById('driveStatusText');
@@ -666,9 +629,7 @@
                 await new Promise((resolve, reject) => {
                     gapi.load('client', async () => {
                         try {
-                            await gapi.client.init({
-                                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                            });
+                            await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
                             gapiInited = true;
                             resolve();
                         } catch (err) { reject(err); }
@@ -731,17 +692,10 @@
 
         async function createFolderInDrive(folderName, parentFolderId) {
             if (!driveConnected || !accessToken) throw new Error('No hay conexión con Google Drive');
-            const metadata = {
-                name: folderName,
-                mimeType: 'application/vnd.google-apps.folder',
-                parents: [parentFolderId]
-            };
+            const metadata = { name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: [parentFolderId] };
             const response = await fetch('https://www.googleapis.com/drive/v3/files', {
                 method: 'POST',
-                headers: new Headers({
-                    'Authorization': 'Bearer ' + accessToken,
-                    'Content-Type': 'application/json'
-                }),
+                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' }),
                 body: JSON.stringify(metadata)
             });
             if (!response.ok) throw new Error('Error al crear carpeta');
@@ -782,15 +736,10 @@
                     const byteArray = new Uint8Array(byteNumbers);
                     
                     let targetFolderId = otFolderId;
-                    if (file.type === 'photo' || file.mimeType.startsWith('image/')) {
-                        targetFolderId = imagenesFolder.id;
-                    } else if (file.name.toLowerCase().includes('certificado') || file.name.toLowerCase().includes('certificate')) {
-                        targetFolderId = certificadosFolder.id;
-                    } else if (file.name.toLowerCase().endsWith('.pdf')) {
-                        targetFolderId = pdfFolder.id;
-                    } else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) {
-                        targetFolderId = informesFolder.id;
-                    }
+                    if (file.type === 'photo' || file.mimeType.startsWith('image/')) targetFolderId = imagenesFolder.id;
+                    else if (file.name.toLowerCase().includes('certificado') || file.name.toLowerCase().includes('certificate')) targetFolderId = certificadosFolder.id;
+                    else if (file.name.toLowerCase().endsWith('.pdf')) targetFolderId = pdfFolder.id;
+                    else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) targetFolderId = informesFolder.id;
                     
                     await uploadFileToDrive(file.name, byteArray, file.mimeType, targetFolderId);
                 }
@@ -803,9 +752,6 @@
             }
         }
 
-        // ============================================
-        // INICIALIZACIÓN
-        // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('fechaInspeccion').valueAsDate = new Date();
             document.getElementById('matFecha').valueAsDate = new Date();
@@ -813,6 +759,7 @@
             renderTypeGrid();
             renderOTTable();
             updateOTSelect();
+            updateMaterialOTSelect(); // Asegurar que se cargue al inicio
             initSignaturePad();
             initMaterialSignaturePad();
             initUploadZone();
@@ -847,25 +794,46 @@
             zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
             input.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
         }
+        
+        // --- CORRECCIÓN FIRMA: Guardar y restaurar al redimensionar ---
         function initSignaturePad() {
             const canvas = document.getElementById('signature-canvas');
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: 'rgb(0, 0, 0)' });
             function resize() {
+                const data = signaturePad.toData(); // 1. Guardar el dibujo actual
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext('2d').scale(ratio, ratio); signaturePad.clear();
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                if (data && data.length > 0) {
+                    signaturePad.fromData(data); // 2. Restaurar el dibujo
+                } else {
+                    signaturePad.clear();
+                }
             }
-            resize(); window.addEventListener('resize', resize);
+            resize();
+            window.addEventListener('resize', resize);
         }
         
         function initMaterialSignaturePad() {
             const canvas = document.getElementById('materialSignatureCanvas');
             materialSignaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: 'rgb(0, 0, 0)' });
+            function resize() {
+                const data = materialSignaturePad.toData(); // 1. Guardar el dibujo actual
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                if (data && data.length > 0) {
+                    materialSignaturePad.fromData(data); // 2. Restaurar el dibujo
+                } else {
+                    materialSignaturePad.clear();
+                }
+            }
+            resize();
+            window.addEventListener('resize', resize);
         }
 
-        // ============================================
-        // CARGA DE EXCEL
-        // ============================================
         function handleFile(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1005,17 +973,17 @@
         }
         function markFinished(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
+            if (ot) { ot.estadoManual = 'finalizada'; ot.fechaReal = new Date().toISOString().split('T')[0]; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showToast(`✅ OT ${otNumber} finalizada`, 'success'); }
         }
         function markRejected(otNumber) {
             const ot = otsData.find(o => o.ot === otNumber);
-            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
+            if (ot) { if (!confirm(`¿Rechazar OT ${otNumber}? No se volverá a cargar.`)) return; ot.estadoManual = 'rechazada'; ot.esNueva = false; localStorage.setItem('inmetal_ots_v40', JSON.stringify(otsData)); renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showToast(`❌ OT ${otNumber} rechazada`, 'warning'); }
         }
         function clearAllData() {
             if (confirm('¿Borrar TODAS las OTs?') && confirm('⚠️ ÚLTIMA CONFIRMACIÓN: ¿Continuar?')) {
                 otsData = []; localStorage.removeItem('inmetal_ots_v40'); localStorage.removeItem('inmetal_last_import_v40');
                 lastImportStats = null; document.getElementById('importSummary').style.display = 'none'; document.getElementById('lastUpdate').style.display = 'none';
-                renderOTTable(); updateOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
+                renderOTTable(); updateOTSelect(); updateMaterialOTSelect(); updateFilterCounts(); showToast('🗑️ Datos borrados', 'info');
             }
         }
         function exportData() {
@@ -1038,14 +1006,25 @@
             if (currentValue) select.value = currentValue;
         }
         
+        // --- CORRECCIÓN SELECTOR DE MATERIALES ---
         function updateMaterialOTSelect() {
             const select = document.getElementById('matOtSelect');
+            if (!select) return;
+            const currentValue = select.value;
             select.innerHTML = '<option value="">Seleccionar OT...</option>';
-            otsData.filter(o => o.estadoManual === 'activa').forEach(ot => {
-                const opt = document.createElement('option'); opt.value = ot.ot;
+            
+            const activeOTs = otsData.filter(o => o.estadoManual === 'activa');
+            if (activeOTs.length === 0) {
+                select.innerHTML = '<option value="">No hay OTs activas cargadas</option>';
+            }
+
+            activeOTs.forEach(ot => {
+                const opt = document.createElement('option');
+                opt.value = ot.ot;
                 opt.textContent = `OT ${ot.ot} — ${ot.cliente || 'Sin cliente'}`;
                 select.appendChild(opt);
             });
+            if (currentValue) select.value = currentValue;
         }
         
         async function autoFillOT() {
@@ -1072,12 +1051,11 @@
             const ot = otsData.find(o => o.ot === otNumber);
             if (ot) {
                 document.getElementById('matCliente').value = ot.cliente || '';
+            } else {
+                document.getElementById('matCliente').value = '';
             }
         }
 
-        // ============================================
-        // REPOSITORIO Y TRAZABILIDAD
-        // ============================================
         async function handleFileUpload(input, type) {
             const files = input.files; const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
@@ -1137,9 +1115,6 @@
             await renderRepository(ot); showToast('🗑️ Archivo eliminado', 'info');
         }
 
-        // ============================================
-        // FOTOS POR ÍTEM DE CONTROL
-        // ============================================
         async function handleItemPhotoUpload(typeId, itemIdx, input) {
             const files = input.files; const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
@@ -1167,9 +1142,6 @@
 
         function viewItemPhoto(photoDataUrl) { const win = window.open(); win.document.write(`<img src="${photoDataUrl}" style="max-width:100%; height:auto;" />`); }
 
-        // ============================================
-        // LÓGICA DE INSPECCIÓN
-        // ============================================
         function renderTypeGrid() { document.getElementById('typeGrid').innerHTML = inspectionTypes.map(t => `<div class="type-chip" data-type="${t.id}" onclick="toggleType('${t.id}')">${t.icon} ${t.label}</div>`).join(''); }
         function toggleType(typeId) {
             const chip = document.querySelector(`[data-type="${typeId}"]`);
@@ -1256,9 +1228,6 @@
             showToast(msg, ncs > 0 ? 'error' : obs > 0 ? 'warning' : 'success');
         }
 
-        // ============================================
-        // GENERACIÓN DE PDF PROFESIONAL CON LOGO
-        // ============================================
         async function generateFormalPDF() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
@@ -1272,89 +1241,44 @@
             try {
                 doc.addImage(INMETAL_LOGO_BASE64, 'PNG', margin, y, 50, 20);
             } catch (e) {
-                doc.setFillColor(30, 64, 175);
-                doc.rect(margin, y, 50, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
+                doc.setFillColor(30, 64, 175); doc.rect(margin, y, 50, 20, 'F');
+                doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
                 doc.text('INMETAL', margin + 5, y + 12);
             }
             
-            doc.setTextColor(30, 41, 59);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30, 41, 59); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
             doc.text('INDUSTRIA METALÚRGICA', pageWidth - margin, y + 8, { align: 'right' });
             doc.setFont('helvetica', 'normal');
             doc.text('OBATOWN COMPANY S.A.', pageWidth - margin, y + 14, { align: 'right' });
             doc.text('Departamento de Calidad — ISO 9001:2015', pageWidth - margin, y + 20, { align: 'right' });
             
-            y += 25;
-            doc.setDrawColor(30, 64, 175);
-            doc.setLineWidth(0.5);
-            doc.line(margin, y, pageWidth - margin, y);
-            y += 5;
+            y += 25; doc.setDrawColor(30, 64, 175); doc.setLineWidth(0.5); doc.line(margin, y, pageWidth - margin, y); y += 5;
+            doc.setTextColor(30, 41, 59); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+            doc.text('INFORME DE INSPECCIÓN DE CALIDAD', pageWidth / 2, y, { align: 'center' }); y += 8;
             
-            doc.setTextColor(30, 41, 59);
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('INFORME DE INSPECCIÓN DE CALIDAD', pageWidth / 2, y, { align: 'center' });
-            y += 8;
-            
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(100);
+            doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
             doc.text(`Documento N°: INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`, pageWidth - margin, y, { align: 'right' });
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, y + 5, { align: 'right' });
-            y += 10;
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, pageWidth - margin, y + 5, { align: 'right' }); y += 10;
             
-            doc.setFillColor(241, 245, 249);
-            doc.rect(margin, y - 3, pageWidth - 2 * margin, 18, 'F');
-            doc.setTextColor(80, 80, 80);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'italic');
-            const introText = [
-                'El presente documento certifica los resultados de la inspección de calidad realizada conforme',
-                'a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.'
-            ];
-            introText.forEach(line => {
-                doc.text(line, margin + 3, y + 3);
-                y += 4;
-            });
-            y += 5;
+            doc.setFillColor(241, 245, 249); doc.rect(margin, y - 3, pageWidth - 2 * margin, 18, 'F');
+            doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.setFont('helvetica', 'italic');
+            const introText = ['El presente documento certifica los resultados de la inspección de calidad realizada conforme', 'a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.'];
+            introText.forEach(line => { doc.text(line, margin + 3, y + 3); y += 4; }); y += 5;
             
-            doc.setTextColor(30, 64, 175);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('1. DATOS DE TRAZABILIDAD', margin, y);
-            y += 8;
+            doc.setTextColor(30, 64, 175); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('1. DATOS DE TRAZABILIDAD', margin, y); y += 8;
             
             const otData = otsData.find(o => o.ot === ot) || {};
             const traceData = [
-                ['Orden de Trabajo (OT)', ot],
-                ['Cliente', document.getElementById('cliente').value || '—'],
-                ['Responsable / Operario', document.getElementById('operario').value || '—'],
-                ['Sector', document.getElementById('sectorExcel').value || '—'],
-                ['Etapa / Proceso', document.getElementById('etapa').value || '—'],
-                ['Inspector', document.getElementById('inspector').value || '—'],
-                ['Turno', document.getElementById('turno').value || '—'],
-                ['Descripción del Trabajo', document.getElementById('descripcion').value || '—']
+                ['Orden de Trabajo (OT)', ot], ['Cliente', document.getElementById('cliente').value || '—'],
+                ['Responsable / Operario', document.getElementById('operario').value || '—'], ['Sector', document.getElementById('sectorExcel').value || '—'],
+                ['Etapa / Proceso', document.getElementById('etapa').value || '—'], ['Inspector', document.getElementById('inspector').value || '—'],
+                ['Turno', document.getElementById('turno').value || '—'], ['Descripción del Trabajo', document.getElementById('descripcion').value || '—']
             ];
             
-            doc.autoTable({
-                startY: y,
-                body: traceData,
-                margin: { left: margin, right: margin },
-                theme: 'grid',
-                styles: { fontSize: 9, cellPadding: 3, fillColor: [255, 255, 255] },
-                columnStyles: { 0: { fontStyle: 'bold', fillColor: [241, 245, 249], width: 55 } }
-            });
+            doc.autoTable({ startY: y, body: traceData, margin: { left: margin, right: margin }, theme: 'grid', styles: { fontSize: 9, cellPadding: 3, fillColor: [255, 255, 255] }, columnStyles: { 0: { fontStyle: 'bold', fillColor: [241, 245, 249], width: 55 } } });
             y = doc.lastAutoTable.finalY + 10;
             
-            doc.setTextColor(30, 64, 175);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('2. RESULTADOS DE INSPECCIÓN', margin, y);
-            y += 8;
+            doc.setTextColor(30, 64, 175); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('2. RESULTADOS DE INSPECCIÓN', margin, y); y += 8;
             
             const tableData = [];
             Object.keys(inspectionItems).forEach(typeId => {
@@ -1369,14 +1293,7 @@
             });
             
             if (tableData.length > 0) {
-                doc.autoTable({
-                    startY: y,
-                    head: [['Tipo', 'Ítem', 'Estado', 'Valor', 'Observaciones']],
-                    body: tableData,
-                    margin: { left: margin, right: margin },
-                    theme: 'striped',
-                    styles: { fontSize: 8, cellPadding: 2 },
-                    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                doc.autoTable({ startY: y, head: [['Tipo', 'Ítem', 'Estado', 'Valor', 'Observaciones']], body: tableData, margin: { left: margin, right: margin }, theme: 'striped', styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 9 },
                     didParseCell: (hookData) => {
                         if (hookData.section === 'body' && hookData.column.index === 2) {
                             if (hookData.cell.raw.includes('Conforme')) hookData.cell.styles.textColor = [16, 185, 129];
@@ -1388,11 +1305,7 @@
                 y = doc.lastAutoTable.finalY + 10;
             }
             
-            doc.setTextColor(30, 64, 175);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('3. EVIDENCIAS FOTOGRÁFICAS', margin, y);
-            y += 8;
+            doc.setTextColor(30, 64, 175); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('3. EVIDENCIAS FOTOGRÁFICAS', margin, y); y += 8;
             
             let hasItemPhotos = false;
             Object.keys(inspectionItems).forEach(typeId => {
@@ -1402,97 +1315,51 @@
                     if (item.photos && item.photos.length > 0) {
                         hasItemPhotos = true;
                         if (y > 240) { doc.addPage(); y = 20; }
-                        
-                        doc.setFontSize(10);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor(30, 41, 59);
-                        doc.text(`${type.label} - ${items[idx]}`, margin, y);
-                        y += 5;
-                        
+                        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+                        doc.text(`${type.label} - ${items[idx]}`, margin, y); y += 5;
                         let col = 0;
                         item.photos.forEach((photo) => {
                             if (col === 0 && y > 250) { doc.addPage(); y = 20; }
                             try {
                                 doc.addImage(photo.data, 'JPEG', margin + (col * 55), y, 50, 35);
-                                doc.setFontSize(6);
-                                doc.setFont('helvetica', 'normal');
-                                doc.setTextColor(100);
+                                doc.setFontSize(6); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
                                 doc.text(photo.name.substring(0, 25), margin + (col * 55), y + 38);
-                                col++;
-                                if (col >= 3) { col = 0; y += 42; }
-                            } catch (e) {
-                                doc.text(`[Foto: ${photo.name}]`, margin, y);
-                                y += 5;
-                            }
+                                col++; if (col >= 3) { col = 0; y += 42; }
+                            } catch (e) { doc.text(`[Foto: ${photo.name}]`, margin, y); y += 5; }
                         });
-                        if (col > 0) y += 42;
-                        y += 3;
+                        if (col > 0) y += 42; y += 3;
                     }
                 });
             });
-            
-            if (!hasItemPhotos) {
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(100);
-                doc.text('No se adjuntaron evidencias fotográficas.', margin, y);
-                y += 10;
-            }
+            if (!hasItemPhotos) { doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(100); doc.text('No se adjuntaron evidencias fotográficas.', margin, y); y += 10; }
             
             if (y > 220) { doc.addPage(); y = 20; }
-            
-            doc.setFillColor(241, 245, 249);
-            doc.rect(margin - 2, y - 5, pageWidth - 2 * margin + 4, 50, 'F');
-            
-            doc.setTextColor(30, 64, 175);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('4. FIRMA Y CERTIFICACIÓN', margin, y);
-            y += 10;
+            doc.setFillColor(241, 245, 249); doc.rect(margin - 2, y - 5, pageWidth - 2 * margin + 4, 50, 'F');
+            doc.setTextColor(30, 64, 175); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('4. FIRMA Y CERTIFICACIÓN', margin, y); y += 10;
             
             if (!signaturePad.isEmpty()) {
-                try {
-                    doc.addImage(signaturePad.toDataURL('image/png'), 'PNG', margin, y, 60, 25);
-                } catch (e) {
-                    doc.text('[Firma digital no disponible]', margin, y + 10);
-                }
+                try { doc.addImage(signaturePad.toDataURL('image/png'), 'PNG', margin, y, 60, 25); } catch (e) { doc.text('[Firma digital no disponible]', margin, y + 10); }
             }
-            
-            doc.setDrawColor(100);
-            doc.setLineWidth(0.5);
-            doc.line(margin, y + 30, margin + 80, y + 30);
-            
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(80);
+            doc.setDrawColor(100); doc.setLineWidth(0.5); doc.line(margin, y + 30, margin + 80, y + 30);
+            doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80);
             doc.text(`Inspector: ${document.getElementById('inspector').value || '_______________________'}`, margin, y + 35);
             doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, margin, y + 40);
             
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setDrawColor(200);
-                doc.setLineWidth(0.3);
-                doc.line(margin, 285, pageWidth - margin, 285);
-                
-                doc.setFontSize(8);
-                doc.setTextColor(120);
+                doc.setPage(i); doc.setDrawColor(200); doc.setLineWidth(0.3); doc.line(margin, 285, pageWidth - margin, 285);
+                doc.setFontSize(8); doc.setTextColor(120);
                 doc.text('INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.', pageWidth / 2, 290, { align: 'center' });
                 doc.text('Departamento de Calidad — ISO 9001:2015 — Documento Controlado', pageWidth / 2, 295, { align: 'center' });
                 doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, 295, { align: 'right' });
             }
-            
             doc.save(`INFORME_INSPECCION_OT${ot}_${new Date().toISOString().split('T')[0]}.pdf`);
             showToast('📄 PDF Profesional generado', 'success');
         }
 
-        // ============================================
-        // GENERACIÓN DE WORD PROFESIONAL
-        // ============================================
         async function generateFormalWord() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            
             const fecha = new Date().toLocaleDateString('es-AR');
             const inspector = document.getElementById('inspector').value || 'No especificado';
             const otData = otsData.find(o => o.ot === ot) || {};
@@ -1502,28 +1369,15 @@
                 const type = inspectionTypes.find(t => t.id === typeId);
                 const items = getItemsForType(typeId);
                 itemsHtml += `<h3 style="color:#1e40af; margin-top:20px; border-bottom:2px solid #1e40af; padding-bottom:5px; font-size:13pt;">${type.icon} ${type.label}</h3>`;
-                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:9pt; margin-bottom:10px; border:1px solid #ddd;">
-                    <tr style="background:#1e40af; color:white;"><th style="border:1px solid #ddd; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Observación</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Imágenes</th></tr>`;
-                
+                itemsHtml += `<table style="width:100%; border-collapse:collapse; font-size:9pt; margin-bottom:10px; border:1px solid #ddd;"><tr style="background:#1e40af; color:white;"><th style="border:1px solid #ddd; padding:6px; text-align:left;">Ítem</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Estado</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Valor</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Observación</th><th style="border:1px solid #ddd; padding:6px; text-align:left;">Imágenes</th></tr>`;
                 inspectionItems[typeId].forEach((item, idx) => {
                     if (item.status) {
                         const statusText = { ok: '✅ Conforme', nc: '❌ No Conforme', obs: '⚠️ Observación', na: '➖ No Aplica' }[item.status] || item.status;
                         const photoCount = item.photos ? item.photos.length : 0;
-                        let photosHtml = photoCount > 0 ? `📷 ${photoCount} imagen(es)` : '—';
-                        
-                        itemsHtml += `<tr>
-                            <td style="border:1px solid #ddd; padding:5px;">${items[idx]}</td>
-                            <td style="border:1px solid #ddd; padding:5px;">${statusText}</td>
-                            <td style="border:1px solid #ddd; padding:5px;">${item.value || '—'}</td>
-                            <td style="border:1px solid #ddd; padding:5px;">${item.obs || '—'}</td>
-                            <td style="border:1px solid #ddd; padding:5px;">${photosHtml}</td>
-                        </tr>`;
-                        
+                        itemsHtml += `<tr><td style="border:1px solid #ddd; padding:5px;">${items[idx]}</td><td style="border:1px solid #ddd; padding:5px;">${statusText}</td><td style="border:1px solid #ddd; padding:5px;">${item.value || '—'}</td><td style="border:1px solid #ddd; padding:5px;">${item.obs || '—'}</td><td style="border:1px solid #ddd; padding:5px;">${photoCount > 0 ? '📷 ' + photoCount + ' imagen(es)' : '—'}</td></tr>`;
                         if (item.photos && item.photos.length > 0) {
                             itemsHtml += `<tr><td colspan="5" style="padding:8px; background:#f8fafc;"><div style="display:flex; flex-wrap:wrap; gap:8px;">`;
-                            item.photos.forEach(photo => {
-                                itemsHtml += `<img src="${photo.data}" style="width:100px; height:75px; object-fit:cover; border:1px solid #ddd; border-radius:3px;" />`;
-                            });
+                            item.photos.forEach(photo => { itemsHtml += `<img src="${photo.data}" style="width:100px; height:75px; object-fit:cover; border:1px solid #ddd; border-radius:3px;" />`; });
                             itemsHtml += `</div></td></tr>`;
                         }
                     }
@@ -1531,73 +1385,7 @@
                 itemsHtml += `</table>`;
             });
             
-            const htmlContent = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset="utf-8">
-                    <title>Informe de Inspección - OT ${ot}</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.4; font-size: 10pt; }
-                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 22pt; font-weight: bold; }
-                        .header p { margin: 5px 0 0; font-size: 10pt; opacity: 0.95; }
-                        .doc-info { background: #f1f5f9; padding: 12px; margin: 15px 0; border-left: 4px solid #1e40af; font-size: 9pt; }
-                        .section { margin: 20px 0; }
-                        .section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 6px; font-size: 14pt; margin-bottom: 12px; }
-                        .intro { background: #eff6ff; padding: 12px; border-radius: 4px; margin: 15px 0; font-style: italic; color: #475569; font-size: 9pt; }
-                        .signature { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 15px; }
-                        .footer { margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 8pt; color: #64748b; text-align: center; }
-                        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-                        th { background: #1e40af; color: white; font-weight: bold; }
-                        img { max-width: 100px; max-height: 75px; margin: 3px; border: 1px solid #ddd; border-radius: 3px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>INMETAL</h1>
-                        <p>INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</p>
-                        <p>Departamento de Calidad — ISO 9001:2015</p>
-                        <p style="font-size:14pt; margin-top:10px; font-weight:bold;">INFORME DE INSPECCIÓN DE CALIDAD</p>
-                    </div>
-                    <div class="doc-info">
-                        <strong>Documento N°:</strong> INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}<br>
-                        <strong>Fecha de Emisión:</strong> ${fecha}<br>
-                        <strong>OT:</strong> ${ot}
-                    </div>
-                    <div class="intro">
-                        El presente documento certifica los resultados de la inspección de calidad realizada conforme a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.
-                    </div>
-                    <div class="section">
-                        <h2>1. DATOS DE TRAZABILIDAD</h2>
-                        <table style="width:100%; border-collapse:collapse; font-size:9pt;">
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold; width:35%;">Orden de Trabajo (OT)</td><td style="border:1px solid #ddd; padding:6px;">${ot}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Cliente</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('cliente').value || '—'}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Responsable / Operario</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('operario').value || '—'}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Sector</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('sectorExcel').value || '—'}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Etapa / Proceso</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('etapa').value || '—'}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Inspector</td><td style="border:1px solid #ddd; padding:6px;">${inspector}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Turno</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('turno').value || '—'}</td></tr>
-                            <tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Descripción del Trabajo</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('descripcion').value || '—'}</td></tr>
-                        </table>
-                    </div>
-                    <div class="section">
-                        <h2>2. RESULTADOS DE INSPECCIÓN</h2>
-                        ${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}
-                    </div>
-                    <div class="signature">
-                        <h2>3. FIRMA Y CERTIFICACIÓN</h2>
-                        <p><strong>Inspector de Calidad:</strong> ${inspector}</p>
-                        <p><strong>Fecha:</strong> ${fecha}</p>
-                        ${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:200px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}
-                    </div>
-                    <div class="footer">
-                        <p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p>
-                        <p>Departamento de Calidad — ISO 9001:2015 — Documento Controlado</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            const htmlContent = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="utf-8"><title>Informe de Inspección - OT ${ot}</title><style>body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.4; font-size: 10pt; }.header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px; text-align: center; }.header h1 { margin: 0; font-size: 22pt; font-weight: bold; }.header p { margin: 5px 0 0; font-size: 10pt; opacity: 0.95; }.doc-info { background: #f1f5f9; padding: 12px; margin: 15px 0; border-left: 4px solid #1e40af; font-size: 9pt; }.section { margin: 20px 0; }.section h2 { color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 6px; font-size: 14pt; margin-bottom: 12px; }.intro { background: #eff6ff; padding: 12px; border-radius: 4px; margin: 15px 0; font-style: italic; color: #475569; font-size: 9pt; }.signature { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 15px; }.footer { margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 8pt; color: #64748b; text-align: center; }table { width: 100%; border-collapse: collapse; margin: 10px 0; }th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }th { background: #1e40af; color: white; font-weight: bold; }img { max-width: 100px; max-height: 75px; margin: 3px; border: 1px solid #ddd; border-radius: 3px; }</style></head><body><div class="header"><h1>INMETAL</h1><p>INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</p><p>Departamento de Calidad — ISO 9001:2015</p><p style="font-size:14pt; margin-top:10px; font-weight:bold;">INFORME DE INSPECCIÓN DE CALIDAD</p></div><div class="doc-info"><strong>Documento N°:</strong> INF-${ot}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}<br><strong>Fecha de Emisión:</strong> ${fecha}<br><strong>OT:</strong> ${ot}</div><div class="intro">El presente documento certifica los resultados de la inspección de calidad realizada conforme a los procedimientos establecidos en el Sistema de Gestión de Calidad ISO 9001:2015.</div><div class="section"><h2>1. DATOS DE TRAZABILIDAD</h2><table style="width:100%; border-collapse:collapse; font-size:9pt;"><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold; width:35%;">Orden de Trabajo (OT)</td><td style="border:1px solid #ddd; padding:6px;">${ot}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Cliente</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('cliente').value || '—'}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Responsable / Operario</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('operario').value || '—'}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Sector</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('sectorExcel').value || '—'}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Etapa / Proceso</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('etapa').value || '—'}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Inspector</td><td style="border:1px solid #ddd; padding:6px;">${inspector}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Turno</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('turno').value || '—'}</td></tr><tr><td style="border:1px solid #ddd; padding:6px; background:#f8fafc; font-weight:bold;">Descripción del Trabajo</td><td style="border:1px solid #ddd; padding:6px;">${document.getElementById('descripcion').value || '—'}</td></tr></table></div><div class="section"><h2>2. RESULTADOS DE INSPECCIÓN</h2>${itemsHtml || '<p>No se registraron ítems evaluados.</p>'}</div><div class="signature"><h2>3. FIRMA Y CERTIFICACIÓN</h2><p><strong>Inspector de Calidad:</strong> ${inspector}</p><p><strong>Fecha:</strong> ${fecha}</p>${!signaturePad.isEmpty() ? `<img src="${signaturePad.toDataURL('image/png')}" style="max-width:200px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<p><em>Firma no registrada</em></p>'}</div><div class="footer"><p><strong>INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.</strong></p><p>Departamento de Calidad — ISO 9001:2015 — Documento Controlado</p></div></body></html>`;
 
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
@@ -1609,62 +1397,22 @@
             showToast('📝 Word Profesional generado', 'success');
         }
 
-        // ============================================
-        // EMAIL AUTOMÁTICO
-        // ============================================
         function prepareEmail() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('Seleccioná una OT primero', 'warning');
-            
-            const selectedEmails = [];
-            const selectedNames = [];
-            document.querySelectorAll('.contact-item input[type="checkbox"]:checked').forEach(cb => {
-                selectedEmails.push(cb.value);
-                selectedNames.push(cb.dataset.name);
-            });
-            
+            const selectedEmails = [], selectedNames = [];
+            document.querySelectorAll('.contact-item input[type="checkbox"]:checked').forEach(cb => { selectedEmails.push(cb.value); selectedNames.push(cb.dataset.name); });
             if (selectedEmails.length === 0) return showToast('⚠️ Seleccioná al menos un destinatario', 'warning');
             
             const inspector = document.getElementById('inspector').value || 'Inspector de Calidad';
             const otData = otsData.find(o => o.ot === ot) || {};
             const subject = `INFORME DE INSPECCIÓN - OT ${ot} - ${otData.cliente || 'Cliente'}`;
+            const body = `Estimados,\n\nPor medio del presente se remite el informe de inspección de calidad correspondiente a la Orden de Trabajo N° ${ot}.\n\nDATOS DEL INFORME:\n• OT: ${ot}\n• Cliente: ${otData.cliente || '—'}\n• Inspector: ${inspector}\n• Fecha: ${new Date().toLocaleDateString('es-AR')}\n\n📎 DOCUMENTOS ADJUNTOS:\n• Informe de Inspección en formato PDF\n• Evidencias fotográficas y documentación técnica\n\nQuedamos a disposición para cualquier consulta.\n\nSaludos cordiales,\n\n${inspector}\nDepartamento de Calidad\nINMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.\nISO 9001:2015\n\n---\nDestinatarios: ${selectedNames.join(', ')}`;
             
-            const body = `Estimados,
-
-Por medio del presente se remite el informe de inspección de calidad correspondiente a la Orden de Trabajo N° ${ot}.
-
-DATOS DEL INFORME:
-• OT: ${ot}
-• Cliente: ${otData.cliente || '—'}
-• Inspector: ${inspector}
-• Fecha: ${new Date().toLocaleDateString('es-AR')}
-
-📎 DOCUMENTOS ADJUNTOS:
-• Informe de Inspección en formato PDF
-• Evidencias fotográficas y documentación técnica
-
-Quedamos a disposición para cualquier consulta.
-
-Saludos cordiales,
-
-${inspector}
-Departamento de Calidad
-INMETAL — INDUSTRIA METALÚRGICA OBATOWN COMPANY S.A.
-ISO 9001:2015
-
----
-Destinatarios: ${selectedNames.join(', ')}
-`;
-            
-            const mailtoLink = `mailto:${selectedEmails.join(';')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.location.href = mailtoLink;
-            
+            window.location.href = `mailto:${selectedEmails.join(';')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             showToast(`✅ Email preparado para ${selectedEmails.length} destinatarios`, 'success');
         }
 
-        // ============================================
-        // EMPAQUETAR ZIP (FALLBACK OFFLINE)
-        // ============================================
         async function exportOTToZip() {
             const ot = document.getElementById('otSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
@@ -1689,29 +1437,18 @@ Destinatarios: ${selectedNames.join(', ')}
             }
         }
 
-        // ============================================
-        // CONTROL DE MATERIALES
-        // ============================================
         function handleMaterialPhoto(input, checkNum) {
             const file = input.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (e) => {
-                materialPhotos[checkNum] = {
-                    data: e.target.result,
-                    name: file.name,
-                    date: new Date().toISOString()
-                };
+                materialPhotos[checkNum] = { data: e.target.result, name: file.name, date: new Date().toISOString() };
                 showToast(`✅ Foto adjunta a verificación ${checkNum}`, 'success');
             };
             reader.readAsDataURL(file);
         }
         
-        function clearMaterialSignature() {
-            if (materialSignaturePad) materialSignaturePad.clear();
-        }
-        
+        function clearMaterialSignature() { if (materialSignaturePad) materialSignaturePad.clear(); }
         function saveMaterialSignature() {
             if (!materialSignaturePad || materialSignaturePad.isEmpty()) return showToast('Firmá primero', 'warning');
             localStorage.setItem('inmetal_material_signature', materialSignaturePad.toDataURL());
@@ -1723,13 +1460,9 @@ Destinatarios: ${selectedNames.join(', ')}
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
             
             const materialData = {
-                ot: ot,
-                fecha: document.getElementById('matFecha').value,
-                responsable: document.getElementById('matResponsable').value,
-                descripcion: document.getElementById('matDescripcion').value,
-                cantidad: document.getElementById('matCantidad').value,
-                unidad: document.getElementById('matUnidad').value,
-                proveedor: document.getElementById('matProveedor').value,
+                ot: ot, fecha: document.getElementById('matFecha').value, responsable: document.getElementById('matResponsable').value,
+                descripcion: document.getElementById('matDescripcion').value, cantidad: document.getElementById('matCantidad').value,
+                unidad: document.getElementById('matUnidad').value, proveedor: document.getElementById('matProveedor').value,
                 certificado: document.getElementById('matCertificado').value,
                 verificaciones: {
                     certificado: { estado: document.getElementById('matCheck1').value, obs: document.getElementById('matCheck1Obs').value },
@@ -1737,8 +1470,7 @@ Destinatarios: ${selectedNames.join(', ')}
                     medidas: { estado: document.getElementById('matCheck3').value, obs: document.getElementById('matCheck3Obs').value },
                     documentacion: { estado: document.getElementById('matCheck4').value, obs: document.getElementById('matCheck4Obs').value }
                 },
-                fotos: materialPhotos,
-                fechaRegistro: new Date().toISOString()
+                fotos: materialPhotos, fechaRegistro: new Date().toISOString()
             };
             
             const controls = await localforage.getItem('material_controls') || [];
@@ -1750,10 +1482,8 @@ Destinatarios: ${selectedNames.join(', ')}
                     showToast('☁️ Subiendo control de material a Drive...', 'info');
                     const otData = otsData.find(o => o.ot === ot) || {};
                     const otFolderName = `OT_${ot}_${(otData.cliente || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}`;
-                    
                     const otFolder = await createFolderInDrive(otFolderName, GOOGLE_DRIVE_CONFIG.FOLDER_ID);
-                    const otFolderId = otFolder.id;
-                    const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolderId);
+                    const controlesFolder = await createFolderInDrive('05_Controles_Materiales', otFolder.id);
                     
                     const controlText = `CONTROL DE INGRESO DE MATERIALES\nOT: ${ot}\nFecha: ${materialData.fecha}\nResponsable: ${materialData.responsable}\nMaterial: ${materialData.descripcion}\nCantidad: ${materialData.cantidad} ${materialData.unidad}\nProveedor: ${materialData.proveedor}\nCertificado: ${materialData.certificado}`;
                     await uploadFileToDrive(`Control_Material_OT${ot}_${new Date().toISOString().split('T')[0]}.txt`, controlText, 'text/plain', controlesFolder.id);
@@ -1765,7 +1495,6 @@ Destinatarios: ${selectedNames.join(', ')}
                         for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
                         await uploadFileToDrive(`Foto_Verificacion${checkNum}_${photo.name}`, new Uint8Array(byteNumbers), photo.mimeType || 'image/jpeg', controlesFolder.id);
                     }
-                    
                     showToast('✅ Control de material guardado y subido a Drive', 'success');
                 } catch (err) {
                     console.error(err);
@@ -1774,7 +1503,6 @@ Destinatarios: ${selectedNames.join(', ')}
             } else {
                 showToast('✅ Control de material guardado localmente', 'success');
             }
-            
             resetMaterialForm();
         }
         
@@ -1782,7 +1510,6 @@ Destinatarios: ${selectedNames.join(', ')}
             const ot = document.getElementById('matOtSelect').value;
             if (!ot) return showToast('⚠️ Seleccioná una OT primero', 'warning');
             showToast('📄 Generando PDF de control de material...', 'info');
-            // Implementación similar a generateFormalPDF pero para materiales
         }
         
         function resetMaterialForm() {
@@ -1816,11 +1543,19 @@ Destinatarios: ${selectedNames.join(', ')}
             showToast('🔄 Formulario reiniciado', 'info');
         }
 
+        // --- CORRECCIÓN CAMBIO DE PESTAÑA: Refrescar selects ---
         function switchTab(tab, event) {
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
+            
+            // Forzar actualización de los selects al cambiar de pestaña
+            if (tab === 'materiales') {
+                updateMaterialOTSelect();
+            } else if (tab === 'inspeccion') {
+                updateOTSelect();
+            }
         }
     </script>
 </body>
